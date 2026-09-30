@@ -15,11 +15,24 @@ nem backup online.
 
 ## Financeiro
 
-O módulo antes chamado Gastos. Hoje reúne o resumo por período (gastos
-registrados, combustível e recarga, gasto por km), o lançamento de despesas e o
-**Histórico de gastos**, que fica numa tela própria: um ano por vez, cada mês
-numa caixa que abre e fecha, com o total do mês e do ano, e filtro por
-categoria. É a tela onde entra o que for financeiro daqui para frente.
+O módulo antes chamado Gastos, hoje o guarda-chuva do que é financeiro. Na
+tela: resumo por período (gastos registrados, combustível e recarga, gasto por
+km), lançamento de despesas e dois botões que levam a telas próprias —
+
+- **Histórico de gastos**: um ano por vez, cada mês numa caixa que abre e
+  fecha, com o total do mês e do ano, e filtro por categoria;
+- **Relatórios**: resultado do período, por hora e por km, ganhos por
+  plataforma e onde você gastou.
+
+As duas ficam fora da barra de baixo: a aba Financeiro segue marcada enquanto
+elas estão abertas, e um botão volta para a tela-mãe.
+
+## Início
+
+Mostra o dia, e só o dia — sem seletor de período. O resultado, a meta, a
+jornada e as últimas corridas são sempre de hoje. O seletor de Hoje / 7 dias /
+Mês continua nas telas onde comparar períodos faz sentido: Corridas, Financeiro
+e Relatórios.
 
 ## Corridas
 

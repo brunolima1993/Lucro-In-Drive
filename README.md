@@ -13,6 +13,15 @@ npx http-server . -p 8080   # depois abra http://localhost:8080
 Os lançamentos ficam no `localStorage` do navegador. Não há backend, conta real
 nem backup online.
 
+## Corridas
+
+As plataformas não são fixas. Além de Uber, 99 e Particular, o motorista
+acrescenta as que rodam na cidade dele (DriveIn, InDrive, uma cooperativa
+local) pelo botão **Plataformas**, na tela de Corridas. Elas passam a aparecer
+ao registrar uma corrida, no filtro do histórico e nos relatórios, e ganham um
+crachá com as iniciais e uma cor fixa. São até 12; uma plataforma que já tem
+corridas registradas não pode ser removida, para não deixar lançamentos órfãos.
+
 ## Meu carro
 
 O cadastro do carro é **opcional**: corridas, gastos e jornadas funcionam sem

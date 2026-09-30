@@ -34,7 +34,20 @@ jornada e as últimas corridas são sempre de hoje. O seletor de Hoje / 7 dias /
 Mês continua nas telas onde comparar períodos faz sentido: Corridas, Financeiro
 e Relatórios.
 
-## Corridas
+## Corridas e jornadas
+
+Uma **jornada por dia**: começar uma quando o dia já tem jornada é recusado. A
+data é o que liga a corrida à jornada dela, então não há lançamento órfão nem
+carimbo em cada corrida.
+
+No Início, "Últimas corridas" mostra as corridas da jornada aberta e se recolhe
+pela seta ao lado do título. Ao encerrar a jornada a lista zera, e o dia fica
+guardado em **Jornadas**, o botão da tela de Corridas: uma caixa por dia
+("Jornada 30/09/2026"), com as corridas, o tempo, a distância e o total do dia,
+abrindo e fechando como os meses do histórico de gastos.
+
+Enquanto a jornada está aberta, a distância do dia é o odômetro menos a
+quilometragem de saída; ao encerrar, vale a leitura final.
 
 As plataformas não são fixas. Além de Uber, 99 e Particular, o motorista
 acrescenta as que rodam na cidade dele (DriveIn, InDrive, uma cooperativa

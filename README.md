@@ -13,6 +13,14 @@ npx http-server . -p 8080   # depois abra http://localhost:8080
 Os lançamentos ficam no `localStorage` do navegador. Não há backend, conta real
 nem backup online.
 
+## Financeiro
+
+O módulo antes chamado Gastos. Hoje reúne o resumo por período (gastos
+registrados, combustível e recarga, gasto por km), o lançamento de despesas e o
+**Histórico de gastos**, que fica numa tela própria: um ano por vez, cada mês
+numa caixa que abre e fecha, com o total do mês e do ano, e filtro por
+categoria. É a tela onde entra o que for financeiro daqui para frente.
+
 ## Corridas
 
 As plataformas não são fixas. Além de Uber, 99 e Particular, o motorista

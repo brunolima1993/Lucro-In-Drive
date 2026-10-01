@@ -59,6 +59,7 @@ passageiro vai receber acompanha a digitação.
 Ao gerar, o comprovante fica salvo em **Comprovantes gerados** e pode ser
 enviado de três formas: link do WhatsApp, o compartilhamento do próprio
 aparelho (é de onde saem Bluetooth e os demais aplicativos) e cópia do texto.
+A lixeira no alto de cada caixa exclui o comprovante, com confirmação.
 
 As plataformas não são fixas. Além de Uber, 99 e Particular, o motorista
 acrescenta as que rodam na cidade dele (DriveIn, InDrive, uma cooperativa

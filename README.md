@@ -106,6 +106,12 @@ ele. Ele existe por três motivos:
 - montar o **painel de manutenção** conforme o motor;
 - manter quilometragem e prazos de revisão no lugar.
 
+No formulário, um **\*** verde ao lado do rótulo marca o que é obrigatório. A
+marca vem do próprio `required` do campo, então não dá para o rótulo dizer uma
+coisa e a validação outra; o asterisco é decorativo (`aria-hidden`), porque
+quem usa leitor de tela já ouve a obrigatoriedade pelo campo. No cadastro do
+carro, isso é marca e modelo — o resto é opcional.
+
 A caixa do veículo traz o cadastro e a quilometragem, com o lápis e a lixeira
 no alto à direita — editar e remover ficam na própria caixa, não em botões
 soltos acima dela. Enquanto não há carro, o topo mostra **Cadastrar carro**.

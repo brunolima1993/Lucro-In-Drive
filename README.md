@@ -119,7 +119,8 @@ no alto à direita — editar e remover ficam na própria caixa, não em botões
 soltos acima dela. Enquanto não há carro, o topo mostra **Cadastrar carro**.
 
 O **Painel de Manutenção** fica numa tela própria, aberta pelo botão em Meu
-carro — que mostra, ao lado do nome, quantos itens estão vencidos ou próximos.
+carro. O botão leva só o nome: o estado de cada item já está na tela, em cada
+cartão.
 
 **Adicionar manutenção** é o botão ao lado dele, para o serviço que não está na
 lista de revisões: pastilha de freio, amortecedor, embreagem, o que for. Em cada

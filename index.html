@@ -225,11 +225,7 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .topbar-back{color:var(--lime)}
 .topbar-back svg{transform:rotate(180deg);width:22px;height:22px}
 .page-link{width:100%;justify-content:space-between;margin-bottom:8px}
-.page-link-note{margin-left:auto;font-size:12px;font-weight:500;color:var(--muted)}
 .page-link svg:last-child{margin-left:auto}
-/* o verde marca o atalho; a seta da direita segue igual à dos outros */
-.page-link.accent-link{color:var(--lime)}
-.page-link.accent-link>svg:last-child{color:var(--text)}
 .list-toolbar.centered{flex-direction:column;align-items:center;justify-content:center;gap:13px}
 .toolbar-filters{display:flex;gap:10px;align-items:center;min-width:0;justify-content:center;flex-wrap:wrap}
 .toolbar-filters select{min-width:0}
@@ -763,11 +759,6 @@ const SERVICE_PLANS={
 };
 /* De "Filtros" num item só para um item por filtro. */
 const RENAMED_SERVICES={filters:'filter-oil',cabin:'filter-cabin'};
-const PLAN_NOTE={
- eletrico:'Carro elétrico: saem do painel a troca de óleo do motor e os filtros de óleo, de ar do motor e de combustível, que este carro não tem. Ficam o filtro de cabine, os freios, o arrefecimento da bateria, o redutor e os pneus.',
- hibrido:'Carro híbrido: o painel mantém os itens do motor a combustão, filtros inclusive, e acrescenta a bateria de tração.',
- combustao:''
-};
 /* Ao mudar o tipo de motor, os itens que continuam no plano conservam o que já
    foi registrado. Um carro novo começa sem registro: inventar prazo de revisão
    de um carro que o app não conhece seria pior do que não mostrar nada. */
@@ -861,32 +852,15 @@ function carPage(){
  const head=title('Cuide de quem te leva.','Revisões, quilometragem e valor do seu carro.',
   v?'':button('Cadastrar carro','addVehicle'));
  return head+(v?vehicleHero(v):'')+
- `<button class="btn secondary page-link accent-link" data-view="carro-manutencao">${icon('tool')}Painel de Manutenção<span class="page-link-note">${pendingServices()}</span>${icon('chevron')}</button>`+
- `<button class="btn secondary page-link" data-view="carro-manutencoes">${icon('plus')}Adicionar manutenção<span class="page-link-note">${maintenanceNote()}</span>${icon('chevron')}</button>`+
+ `<button class="btn secondary page-link" data-view="carro-manutencao">${icon('tool')}Painel de Manutenção${icon('chevron')}</button>`+
+ `<button class="btn secondary page-link" data-view="carro-manutencoes">${icon('plus')}Adicionar manutenção${icon('chevron')}</button>`+
  `<div class="car-grid">${fipeCard()}</div>`;
 }
-/* Quantos itens pedem atenção: é o que justifica abrir o painel. */
-function pendingServices(){
- const atrasados=state.services.filter(s=>status(s).cls==='bad').length;
- const proximos=state.services.filter(s=>status(s).cls==='warn').length;
- if(atrasados)return `${atrasados} ${atrasados===1?'vencida':'vencidas'}`;
- if(proximos)return `${proximos} ${proximos===1?'próxima':'próximas'}`;
- return `${state.services.length} itens`;
-}
 function maintenancePage(){
- const plan=vehiclePlan();
- const note=PLAN_NOTE[plan]?`<div class="msgbox info">${PLAN_NOTE[plan]}</div>`:'';
- return title('Painel de Manutenção','Cada revisão com o prazo que o seu carro pede.')+note+
- `<div class="maintenance-grid">${state.services.map(s=>`<article class="panel maintenance-card"><div class="maintenance-top"><div class="maintenance-name"><span class="square-icon">${icon(s.icon)}</span><h3>${esc(s.name)}</h3></div>${tag(status(s))}</div><div class="maintenance-data"><div><small>Última revisão</small><strong>${s.lastKm!=null?number(s.lastKm)+' km':'Sem registro'}</strong><small>${s.lastDate?prettyDate(s.lastDate):'—'}</small></div><div><small>Próxima revisão</small><strong>${s.nextKm!=null?number(s.nextKm)+' km':s.nextDate?'Por data':'A definir'}</strong><small>${s.nextDate?prettyDate(s.nextDate):s.nextKm!=null?'Prazo por quilometragem':'Prazo não definido'}</small></div></div><div class="maintenance-bottom"><p>${status(s).detail}</p><button class="btn secondary small-btn" data-service="${esc(s.id)}">Registrar revisão</button></div></article>`).join('')}</div>
- <p class="data-warning">Ao registrar uma revisão, informe o próximo prazo conforme o manual do seu carro. Os prazos que já vêm preenchidos nesta prévia são exemplos.</p>`;
+ return title('Painel de Manutenção','Cada revisão com o prazo que o seu carro pede.')+
+ `<div class="maintenance-grid">${state.services.map(s=>`<article class="panel maintenance-card"><div class="maintenance-top"><div class="maintenance-name"><span class="square-icon">${icon(s.icon)}</span><h3>${esc(s.name)}</h3></div>${tag(status(s))}</div><div class="maintenance-data"><div><small>Última revisão</small><strong>${s.lastKm!=null?number(s.lastKm)+' km':'Sem registro'}</strong><small>${s.lastDate?prettyDate(s.lastDate):'—'}</small></div><div><small>Próxima revisão</small><strong>${s.nextKm!=null?number(s.nextKm)+' km':s.nextDate?'Por data':'A definir'}</strong><small>${s.nextDate?prettyDate(s.nextDate):s.nextKm!=null?'Prazo por quilometragem':'Prazo não definido'}</small></div></div><div class="maintenance-bottom"><p>${status(s).detail}</p><button class="btn secondary small-btn" data-service="${esc(s.id)}">Registrar revisão</button></div></article>`).join('')}</div>`;
 }
 
-/* Quanto já foi gasto em manutenção avulsa: é o resumo que cabe no botão. */
-function maintenanceNote(){
- const lista=state.maintenance||[];
- if(!lista.length)return 'nenhuma';
- return `${lista.length} ${lista.length===1?'registro':'registros'}`;
-}
 /* Serviço avulso: o que foi feito, quanto custou e com quantos km. Diferente do
    painel, que acompanha os prazos dos itens de revisão. */
 function maintenanceLogPage(){

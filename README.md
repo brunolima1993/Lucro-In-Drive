@@ -15,12 +15,20 @@ nem backup online.
 
 ## Ícone
 
-O ícone do app — o volante com o gráfico em alta sobre o verde do layout — está
-em `icone.png` (512 px, cantos transparentes) para quando houver um pacote de
-verdade. No protótipo ele vai embutido no `index.html`, em WebP de 192 px dentro
-da variável `--icon-app` do CSS: é a marca ao lado do nome no topo e no login, e
-o script aponta o favicon da aba e o atalho de tela inicial para a mesma
-variável, para a imagem não ficar gravada duas vezes no arquivo.
+O volante com o gráfico em alta é o ícone do app, não um enfeite das telas: o
+topo de cada módulo mostra só o nome LucroInDrive. Ele aparece no login, na aba
+do navegador e, principalmente, como o atalho na tela do celular.
+
+Para "Adicionar à tela de início" funcionar, a página traz o manifesto (nome,
+abertura em tela cheia, cor da barra de status) e as marcações do iPhone. O
+manifesto é montado pelo próprio script para reaproveitar a imagem que já está
+embutida — um WebP de 192 px na variável `--icon-app` do CSS —, em vez de gravar
+a mesma imagem duas vezes no arquivo.
+
+Os formatos para publicar ficam em [`icones/`](icones/LEIAME.md): o PNG de
+512 px do Play Console, o ícone adaptativo do Android em duas camadas, os
+mipmaps antigos e os PNG do PWA. Todos saem da arte original por
+`ferramentas/gerar-icones.py`, que também está no repositório.
 
 ## Financeiro
 

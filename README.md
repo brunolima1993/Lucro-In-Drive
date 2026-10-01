@@ -86,6 +86,19 @@ ele. Ele existe por três motivos:
 O **Painel de manutenção** fica numa tela própria, aberta pelo botão em Meu
 carro — que mostra, ao lado do nome, quantos itens estão vencidos ou próximos.
 
+**Adicionar manutenção** é o botão ao lado dele, para o serviço que não está na
+lista de revisões: pastilha de freio, amortecedor, embreagem, o que for. Em cada
+lançamento vão o que foi feito, o valor, a quilometragem, a data e, se quiser, a
+oficina — assim dá para saber depois com quantos km a pastilha foi trocada. A
+lista de manutenções registradas fica na mesma tela, com o total gasto e uma
+lixeira em cada uma.
+
+Todo lançamento de manutenção entra nos gastos do Financeiro na categoria
+**Manutenção**, pela data informada, exatamente como um gasto do dia a dia:
+conta nos resumos do período, no histórico e nos relatórios. Excluir a
+manutenção também tira o gasto. A quilometragem informada atualiza o odômetro
+quando é maior que a registrada.
+
 ### Painel de manutenção por tipo de motor
 
 | Motor | Itens |

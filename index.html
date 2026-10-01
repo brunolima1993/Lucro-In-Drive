@@ -219,6 +219,14 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 #history-year{padding-right:32px}
 .history-total{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;margin-bottom:18px;border:1px solid var(--border);border-radius:14px;background:var(--surface);font-size:13px;color:var(--muted)}
 .history-total strong{font-size:18px}
+.log-item{border:1px solid var(--border);border-radius:16px;background:var(--surface);padding:15px 8px 15px 16px;margin-bottom:10px}
+.log-head{display:flex;align-items:flex-start;gap:10px}
+.log-head strong{flex:1;min-width:0;font-size:14.5px;font-weight:650;overflow-wrap:break-word;padding-top:9px}
+.log-item small{display:block;font-size:12px;color:var(--muted);margin-top:2px;padding-right:8px}
+.log-foot{display:flex;align-items:baseline;gap:12px;margin-top:11px;padding-right:8px}
+.log-foot span{font-size:13px;color:var(--muted);min-width:0;overflow-wrap:break-word}
+.log-foot strong{margin-left:auto;font-size:15px;font-weight:650;flex-shrink:0}
+.center-text{text-align:center}
 .fold-box{border:1px solid var(--border);border-radius:16px;background:var(--surface);overflow:hidden;margin-bottom:10px}
 .fold-box.open{border-color:#4a5643}
 .fold-head{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:none;text-align:left}
@@ -331,7 +339,9 @@ function seed(){
  const amounts=[42.5,28,63,37.5,51,29.5,72,45];
  const distances=[15,8,24,12,18,9,27,17];
  const rides=amounts.map((amount,i)=>({id:'demo-r'+i,date:dateAt(0),time:['06:40','07:15','07:55','08:40','09:20','10:05','11:10','11:55'][i],platform:i===2||i===5?'99':i===6?'Particular':'Uber',amount,km:distances[i],payment:i===6?'Pix':'Pela plataforma'}));
- const expenses=[{id:'demo-e1',date:dateAt(0),category:'Combustível',description:'Abastecimento',amount:100},{id:'demo-e2',date:dateAt(0),category:'Alimentação',description:'Café e almoço',amount:20}];
+ const expenses=[{id:'demo-e1',date:dateAt(0),category:'Combustível',description:'Abastecimento',amount:100},{id:'demo-e2',date:dateAt(0),category:'Alimentação',description:'Café e almoço',amount:20},
+  {id:'demo-em1',date:dateAt(-12),category:'Manutenção',description:'Troca das pastilhas de freio dianteiras · Auto Center do Zé',amount:320,maintenanceId:'demo-m1'}];
+ const maintenance=[{id:'demo-m1',date:dateAt(-12),description:'Troca das pastilhas de freio dianteiras',km:80000,amount:320,shop:'Auto Center do Zé'}];
  const shifts=[];
  for(let d=1;d<=6;d++){
   const revenue=[0,295,410,335,380,260,320][d];
@@ -339,7 +349,7 @@ function seed(){
   expenses.push({id:'demo-e'+(d+2),date:dateAt(-d),category:'Combustível',description:'Abastecimento',amount:65+d*6});
   shifts.push({id:'demo-s'+d,date:dateAt(-d),startKm:80500-d*145,endKm:80500-(d-1)*145,minutes:330+d*10});
  }
- return {version:1,seedDate:localDate(),goal:300,km:80642,rides,expenses,shifts,receipts:[],activeShift:{id:'demo-s0',date:dateAt(0),startKm:80500,startedAt:Date.now()-375*60000},platforms:['Uber','99','Particular'],vehicle:null,servicePlan:'combustao',vehicleNudge:'on',services:[
+ return {version:1,seedDate:localDate(),goal:300,km:80642,rides,expenses,shifts,maintenance,receipts:[],activeShift:{id:'demo-s0',date:dateAt(0),startKm:80500,startedAt:Date.now()-375*60000},platforms:['Uber','99','Particular'],vehicle:null,servicePlan:'combustao',vehicleNudge:'on',services:[
   {id:'oil',name:'Óleo do motor',icon:'drop',lastKm:71000,lastDate:dateAt(-125),nextKm:81000,nextDate:dateAt(40)},
   {id:'filter-oil',name:'Filtro de óleo',icon:'filter',lastKm:71000,lastDate:dateAt(-125),nextKm:81000,nextDate:dateAt(40)},
   {id:'filter-air',name:'Filtro de ar do motor',icon:'filter',lastKm:78000,lastDate:dateAt(-60),nextKm:88000,nextDate:dateAt(220)},
@@ -365,6 +375,7 @@ const navigation=[['inicio','Início','grid'],['corridas','Corridas','route'],['
 /* telas que não ficam na barra de baixo: abrem a partir da tela-mãe */
 const SUBVIEWS={'corridas-jornadas':{label:'Jornadas',parent:'corridas'},
  'carro-manutencao':{label:'Painel de manutenção',parent:'carro'},
+ 'carro-manutencoes':{label:'Adicionar manutenção',parent:'carro'},
  'corridas-comprovante':{label:'Gerar comprovante',parent:'corridas'},
  'corridas-comprovantes':{label:'Comprovantes gerados',parent:'corridas',back:'corridas-comprovante'},
  'financeiro-historico':{label:'Histórico de gastos',parent:'financeiro'},
@@ -669,14 +680,14 @@ $('app-shell').classList.toggle('terms-mode',needsConsent);
 if(!demoSignedIn){if(location.hash!=='#login')history.replaceState(null,'','#login');$('view').innerHTML=loginScreen();document.title='LucroInDrive — Login';return;}
 if(needsConsent){if(location.hash!=='#termos')history.replaceState(null,'','#termos');$('view').innerHTML=termsScreen();document.title='LucroInDrive — Antes de começar';return;}
 if(location.hash==='#termos'||location.hash==='#login')history.replaceState(null,'','#inicio');
-const route=location.hash.slice(1);view=navigation.some(n=>n[0]===route)||SUBVIEWS[route]?route:'inicio';const sub=SUBVIEWS[view],navView=sub?sub.parent:view,pageName=sub?sub.label:navigation.find(n=>n[0]===view)[1];$('desktop-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}${l}</button>`).join('');$('mobile-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}<span>${l}</span></button>`).join('');$('breadcrumb-name').textContent=pageName;$('topbar-back').hidden=!sub;$('side-car-name').textContent=state.vehicle?[vehicleName(state.vehicle),state.vehicle.year].filter(Boolean).join(' · '):'Nenhum carro cadastrado';$('side-km').textContent=number(state.km)+' km registrados';$('header-date').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});$('view').innerHTML=({inicio:home,corridas:ridesPage,financeiro:financePage,carro:carPage,'corridas-jornadas':journeysPage,'carro-manutencao':maintenancePage,'corridas-comprovante':receiptPage,'corridas-comprovantes':receiptsPage,'financeiro-historico':expenseHistoryPage,'financeiro-relatorios':reportsPage})[view]();document.title='LucroInDrive — '+pageName;updateStorageNote();}
+const route=location.hash.slice(1);view=navigation.some(n=>n[0]===route)||SUBVIEWS[route]?route:'inicio';const sub=SUBVIEWS[view],navView=sub?sub.parent:view,pageName=sub?sub.label:navigation.find(n=>n[0]===view)[1];$('desktop-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}${l}</button>`).join('');$('mobile-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}<span>${l}</span></button>`).join('');$('breadcrumb-name').textContent=pageName;$('topbar-back').hidden=!sub;$('side-car-name').textContent=state.vehicle?[vehicleName(state.vehicle),state.vehicle.year].filter(Boolean).join(' · '):'Nenhum carro cadastrado';$('side-km').textContent=number(state.km)+' km registrados';$('header-date').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});$('view').innerHTML=({inicio:home,corridas:ridesPage,financeiro:financePage,carro:carPage,'corridas-jornadas':journeysPage,'carro-manutencao':maintenancePage,'carro-manutencoes':maintenanceLogPage,'corridas-comprovante':receiptPage,'corridas-comprovantes':receiptsPage,'financeiro-historico':expenseHistoryPage,'financeiro-relatorios':reportsPage})[view]();document.title='LucroInDrive — '+pageName;updateStorageNote();}
 function go(v){if(location.hash==='#'+v){render();return;}location.hash=v;}
 window.addEventListener('hashchange',()=>{render();$('main').scrollTo({top:0,behavior:'instant'});});
 function toast(msg){clearTimeout(toastTimer);$('toast').textContent=msg;$('toast').classList.remove('hidden');toastTimer=setTimeout(()=>$('toast').classList.add('hidden'),4200);}
 let returnFocus=null;
 function openDialog(title,body){returnFocus=document.activeElement;$('dialog-title').textContent=title;$('dialog-body').innerHTML=body;if(!$('dialog').open)$('dialog').showModal();}
 function closeDialog(){$('dialog').close();}
-$('dialog').addEventListener('close',()=>{fipeDialogOpen=false;vehicleDraft=null;receiptToRemove=null;if(returnFocus?.isConnected)returnFocus.focus();});
+$('dialog').addEventListener('close',()=>{fipeDialogOpen=false;vehicleDraft=null;receiptToRemove=null;maintenanceToRemove=null;if(returnFocus?.isConnected)returnFocus.focus();});
 function field(label,name,type='text',value='',extra='',full=false){return `<div class="field ${full?'full':''}"><label for="f-${name}">${label}</label><input id="f-${name}" name="${name}" type="${type}" value="${esc(value)}" ${extra}></div>`;}
 function selectField(label,name,options){return `<div class="field"><label for="f-${name}">${label}</label><select id="f-${name}" name="${name}">${options.map(x=>`<option>${esc(x)}</option>`).join('')}</select></div>`;}
 function form(id,intro,fields,submit='Salvar'){return `<p class="dialog-intro">${intro}</p><form id="${id}"><div class="form-grid">${fields}</div><p class="form-error" id="form-error" role="alert"></p><div class="form-actions"><button type="button" class="btn secondary" data-action="close">Cancelar</button><button type="submit" class="btn primary">${submit}</button></div></form>`;}
@@ -829,6 +840,7 @@ function carPage(){
  const note=PLAN_NOTE[plan]?`<div class="msgbox info">${PLAN_NOTE[plan]}</div>`:'';
  return head+(v?vehicleHero(v):'')+
  `<button class="btn secondary page-link" data-view="carro-manutencao">${icon('tool')}Painel de manutenção<span class="page-link-note">${pendingServices()}</span>${icon('chevron')}</button>`+
+ `<button class="btn secondary page-link" data-view="carro-manutencoes">${icon('plus')}Adicionar manutenção<span class="page-link-note">${maintenanceNote()}</span>${icon('chevron')}</button>`+
  `<div class="car-grid">${fipeCard()}</div>`;
 }
 /* Quantos itens pedem atenção: é o que justifica abrir o painel. */
@@ -845,6 +857,44 @@ function maintenancePage(){
  return title('Painel de manutenção','Cada revisão com o prazo que o seu carro pede.')+note+
  `<div class="maintenance-grid">${state.services.map(s=>`<article class="panel maintenance-card"><div class="maintenance-top"><div class="maintenance-name"><span class="square-icon">${icon(s.icon)}</span><h3>${esc(s.name)}</h3></div>${tag(status(s))}</div><div class="maintenance-data"><div><small>Última revisão</small><strong>${s.lastKm!=null?number(s.lastKm)+' km':'Sem registro'}</strong><small>${s.lastDate?prettyDate(s.lastDate):'—'}</small></div><div><small>Próxima revisão</small><strong>${s.nextKm!=null?number(s.nextKm)+' km':s.nextDate?'Por data':'A definir'}</strong><small>${s.nextDate?prettyDate(s.nextDate):s.nextKm!=null?'Prazo por quilometragem':'Prazo não definido'}</small></div></div><div class="maintenance-bottom"><p>${status(s).detail}</p><button class="btn secondary small-btn" data-service="${esc(s.id)}">Registrar revisão</button></div></article>`).join('')}</div>
  <p class="data-warning">Ao registrar uma revisão, informe o próximo prazo conforme o manual do seu carro. Os prazos que já vêm preenchidos nesta prévia são exemplos.</p>`;
+}
+
+/* Quanto já foi gasto em manutenção avulsa: é o resumo que cabe no botão. */
+function maintenanceNote(){
+ const lista=state.maintenance||[];
+ if(!lista.length)return 'nenhuma';
+ return `${lista.length} ${lista.length===1?'registro':'registros'}`;
+}
+/* Serviço avulso: o que foi feito, quanto custou e com quantos km. Diferente do
+   painel, que acompanha os prazos dos itens de revisão. */
+function maintenanceLogPage(){
+ const lista=[...(state.maintenance||[])].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id));
+ const total=lista.reduce((a,m)=>a+m.amount,0);
+ return title('Adicionar manutenção','Anote o que foi feito, quanto custou e com quantos km.')+
+ `<form id="maintenance-form"><div class="form-grid">
+ ${field('O que foi feito','description','text','','required maxlength="100" placeholder="Ex.: Troca da pastilha de freio"',true)}
+ ${field('Valor (R$)','amount','number','','required min="0.01" max="999999" step="0.01" inputmode="decimal" placeholder="0,00"')}
+ ${field('Quilometragem','km','number',state.km,'required min="0" max="9999999" step="1" inputmode="numeric"')}
+ ${field('Data','date','date',localDate(),`required max="${localDate()}"`)}
+ ${field('Oficina','shop','text','','maxlength="60" placeholder="Opcional"')}
+ </div>
+ <p class="form-error" id="form-error" role="alert"></p>
+ <div class="form-actions"><button type="submit" class="btn primary">${icon('plus')}Salvar manutenção</button></div></form>
+ <p class="small muted center-text" style="margin:14px 0 24px">O valor entra no Financeiro como gasto de Manutenção, junto com os lançamentos do dia a dia.</p>
+ <div class="list-toolbar centered"><h2 class="accent">Manutenções registradas</h2></div>
+ <div class="history-total"><span>Total em manutenção</span><strong class="mono negative">${money(total)}</strong></div>
+ ${lista.length?lista.map(m=>`<article class="log-item"><div class="log-head"><strong>${esc(m.description)}</strong>
+  <button type="button" class="icon-btn fold-del" data-maintenance-remove="${esc(m.id)}" aria-label="Excluir a manutenção ${esc(m.description)}">${icon('trash')}</button></div>
+  <small>${number(m.km)} km · ${prettyDate(m.date)}</small>
+  <div class="log-foot">${m.shop?`<span>${esc(m.shop)}</span>`:''}<strong class="mono negative">${money(m.amount)}</strong></div></article>`).join('')
+  :'<p class="empty">Nenhuma manutenção registrada ainda.</p>'}`;
+}
+let maintenanceToRemove=null;
+function askRemoveMaintenance(id){
+ const m=(state.maintenance||[]).find(x=>x.id===id);
+ if(!m)return;
+ maintenanceToRemove=id;
+ openDialog('Excluir manutenção?',`<p class="dialog-intro">${esc(m.description)} — ${number(m.km)} km, ${money(m.amount)} — sai daqui e o gasto também sai do Financeiro.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn danger" data-action="removeMaintenance">Excluir</button></div>`);
 }
 
 /* ---- Tabela FIPE (consulta real, API pública da Parallelum) ---- */
@@ -1179,6 +1229,7 @@ function normalizeState(){
  if(!state.vehicleNudge)state.vehicleNudge='on';
  if(!Array.isArray(state.platforms)||!state.platforms.length)state.platforms=DEFAULT_PLATFORMS.slice();
  if(!Array.isArray(state.receipts))state.receipts=[];
+ if(!Array.isArray(state.maintenance))state.maintenance=[];
  /* o registro do antigo item "Filtros" fica com o filtro de óleo, que é o que
     se troca junto com o óleo; depois o plano é remontado para o motor em uso */
  state.services.forEach(s=>{if(RENAMED_SERVICES[s.id])s.id=RENAMED_SERVICES[s.id];});
@@ -1199,6 +1250,7 @@ ride:showRide,expense:showExpense,close:closeDialog,goal:()=>openDialog('Sua met
 removeVehicle:()=>openDialog('Remover o carro?',`<p class="dialog-intro">O cadastro do carro e a cotação salva da FIPE saem deste navegador. Corridas, gastos e jornadas continuam como estão.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn danger" data-action="confirmRemoveVehicle">Remover carro</button></div>`),
 confirmRemoveVehicle:()=>{state.vehicle=null;resetFipeState();save();closeDialog();render();toast('Carro removido. Você pode cadastrar de novo quando quiser.');},
 dismissNudge:()=>{state.vehicleNudge='off';save();render();},back:()=>{const sub=SUBVIEWS[view];go(sub?(sub.back||sub.parent):'inicio');},toggleHomeRides:()=>{homeRidesOpen=!homeRidesOpen;render();},removeReceipt:()=>{state.receipts=state.receipts.filter(r=>r.id!==receiptToRemove);if(receiptsOpen)receiptsOpen.delete(receiptToRemove);receiptToRemove=null;save();closeDialog();render();toast('Comprovante excluído.');},
+removeMaintenance:()=>{const id=maintenanceToRemove;if(!id)return;state.maintenance=(state.maintenance||[]).filter(m=>m.id!==id);state.expenses=state.expenses.filter(e=>e.maintenanceId!==id);historyOpen=null;maintenanceToRemove=null;save();closeDialog();render();toast('Manutenção excluída. O gasto saiu junto.');},
 fipeAuto:fipeAuto,fipeList:fipeList,fipeRefresh:fipeRefresh,fipeConfirmYear:fipeConfirmYear,
 fipeManual:()=>{
  const v=state.vehicle;
@@ -1208,7 +1260,7 @@ fipeManual:()=>{
  openDialog('Anotar o valor da FIPE',form('fipe-manual-form','Consultou no site da FIPE? Anote aqui o valor que apareceu. Ele fica salvo apenas neste navegador.',field('Valor (R$)','value','number',atual,'required min="0.01" max="9999999" step="0.01" inputmode="decimal" placeholder="0,00"')+field('Ano do modelo','modelYear','number',v.year||'',`min="1950" max="${maxYear()}" step="1" inputmode="numeric"`)+`<p class="small muted" style="grid-column:1/-1">A consulta oficial fica em <a href="${FIPE_SITE}" target="_blank" rel="noopener noreferrer">veiculos.fipe.org.br</a>.</p>`,'Salvar valor'));
 },
 about:()=>openDialog('Bem-vindo ao LucroInDrive',`<span class="tag ok">Primeiro esboço</span><p class="body-text" style="margin-top:20px">Explore corridas, gastos, jornada, metas e manutenção com dados de exemplo. Os lançamentos alteram os resumos e ficam salvos apenas neste navegador.</p><ul><li>O login é demonstrativo; não há autenticação ou backup online.</li><li>A cotação da FIPE é consultada de verdade, em uma API pública, depois que você cadastra o carro.</li><li>Este app é independente do TMyCar.</li></ul><p class="body-text">Para começar novamente, use “Restaurar demonstração”.</p><button class="btn primary" style="width:100%;margin-top:15px" data-action="close">Explorar o app</button><button class="btn secondary" style="width:100%;margin-top:10px" data-action="logout">Voltar ao login</button>`),reset:()=>openDialog('Restaurar demonstração?',`<p class="dialog-intro">Os lançamentos feitos neste esboço serão removidos deste navegador. Os dados de exemplo serão recriados.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn primary" data-action="confirmReset">Restaurar</button></div>`),confirmReset:()=>{state=seed();period='today';rideFilter='Todas';expenseFilter='Todas';vehicleDraft=null;resetFipeState();save();closeDialog();render();toast('Demonstração restaurada.');}};
-document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
+document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.maintenanceRemove)askRemoveMaintenance(el.dataset.maintenanceRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
 document.addEventListener('change',e=>{if(e.target.id==='consent-confirm'){consentPending=e.target.checked;$('consent-enter').disabled=!consentPending;$('consent-status').textContent=consentPending?'Tudo pronto para continuar.':'Confirme sua idade e o aceite para continuar.';}if(e.target.id==='ride-filter'){rideFilter=e.target.value;render();}if(e.target.id==='history-year'){historyYear=Number(e.target.value);historyOpen=null;render();}if(e.target.id==='expense-filter'){expenseFilter=e.target.value;historyOpen=null;render();}if(vehicleDraft&&e.target.form&&e.target.form.id==='vehicle-form'&&['brand','model','versionIdx','fuel'].includes(e.target.name)){readVehicleDraft();syncVehicleDraft(e.target.name);repaintVehicleForm(e.target.name);}});
 document.addEventListener('input',e=>{if(e.target.id==='fipe-search'){fipeState.filter=e.target.value;if($('fipe-options'))$('fipe-options').innerHTML=fipeOptions();}if(receiptDraft&&e.target.form&&e.target.form.id==='receipt-form'){readReceiptDraft();if($('receipt-preview'))$('receipt-preview').textContent=receiptText(receiptDraft);}});
 document.addEventListener('submit',e=>{
@@ -1227,6 +1279,21 @@ document.addEventListener('submit',e=>{
  case 'start-form':if(state.activeShift)return fail('Já existe uma jornada em andamento.');if(journeyOf(localDate()))return fail('A jornada de hoje já foi encerrada. É uma por dia.');state.km=Number(d.km);state.activeShift={id:uid(),date:localDate(),startKm:Number(d.km),startedAt:Date.now()};message='Jornada iniciada. Bom trabalho!';break;
  case 'end-form':if(!state.activeShift)return fail('Não há uma jornada em andamento.');state.shifts.push({id:state.activeShift.id,date:state.activeShift.date,startKm:state.activeShift.startKm,endKm:Number(d.km),minutes:Math.max(0,(Date.now()-state.activeShift.startedAt)/60000)});state.km=Number(d.km);state.activeShift=null;message='Jornada encerrada. Quilometragem do carro atualizada.';break;
  case 'service-form':{const s=state.services.find(s=>s.id===d.serviceId);if(!s)return fail('Serviço não encontrado.');const km=Number(d.km),nextKm=d.nextKm?Number(d.nextKm):null,amount=d.amount?Number(d.amount):0;if(!nextKm&&!d.nextDate)return fail('Informe a próxima quilometragem ou a próxima data.');if(nextKm!==null&&nextKm<=km)return fail('A próxima quilometragem precisa ser maior que a do serviço.');if(d.nextDate&&d.nextDate<=d.date)return fail('A próxima data precisa ser posterior à data do serviço.');if(s.lastDate&&d.date<s.lastDate)return fail('A data precisa ser igual ou posterior à última revisão registrada.');if(s.lastKm!=null&&km<s.lastKm)return fail('A quilometragem não pode ser menor que a da última revisão.');s.lastKm=km;s.lastDate=d.date;s.nextKm=nextKm;s.nextDate=d.nextDate||null;state.km=Math.max(state.km,km);state.serviceHistory=state.serviceHistory||[];const serviceRecordId=uid();state.serviceHistory.push({id:serviceRecordId,serviceId:s.id,date:d.date,km,amount,shop:d.shop.trim(),nextKm,nextDate:d.nextDate||null});if(amount>0)state.expenses.push({id:uid(),category:'Manutenção',description:s.name+(d.shop.trim()?' · '+d.shop.trim():''),date:d.date,amount,serviceId:serviceRecordId});message=amount>0?'Revisão salva e valor incluído nos gastos.':'Revisão salva. Próximos prazos atualizados.';break;}
+ case 'maintenance-form':{
+  const desc=String(d.description||'').trim().replace(/\s+/g,' ');
+  const valor=Number(d.amount),km=Number(d.km),oficina=String(d.shop||'').trim();
+  if(!desc)return fail('Escreva o que foi feito.');
+  if(!Number.isFinite(valor)||valor<=0)return fail('Informe quanto custou.');
+  if(!Number.isFinite(km)||km<0||km>9999999)return fail('Informe a quilometragem só em números.');
+  const registro={id:uid(),date:d.date,description:desc,km,amount:valor,shop:oficina};
+  state.maintenance=state.maintenance||[];
+  state.maintenance.push(registro);
+  /* mesma regra dos gastos do dia a dia: entra no Financeiro pela data */
+  state.expenses.push({id:uid(),category:'Manutenção',description:desc+(oficina?' · '+oficina:''),date:d.date,amount:valor,maintenanceId:registro.id});
+  state.km=Math.max(state.km,km);
+  message='Manutenção registrada e lançada nos gastos.';
+  break;
+ }
  case 'platform-form':{
   const nome=String(d.name||'').trim().replace(/\s+/g,' ');
   if(!nome)return fail('Digite o nome da plataforma.');

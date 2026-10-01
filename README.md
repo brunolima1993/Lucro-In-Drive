@@ -106,7 +106,9 @@ ele. Ele existe por três motivos:
 - montar o **painel de manutenção** conforme o motor;
 - manter quilometragem e prazos de revisão no lugar.
 
-No formulário, um **\*** verde ao lado do rótulo marca o que é obrigatório. A
+O formulário do carro é centralizado: cada rótulo fica em verde, no meio da sua
+caixa, e o que é digitado também sai centralizado. Um **\*** verde ao lado do
+rótulo marca o que é obrigatório. A
 marca vem do próprio `required` do campo, então não dá para o rótulo dizer uma
 coisa e a validação outra; o asterisco é decorativo (`aria-hidden`), porque
 quem usa leitor de tela já ouve a obrigatoriedade pelo campo. No cadastro do
@@ -116,7 +118,7 @@ A caixa do veículo traz o cadastro e a quilometragem, com o lápis e a lixeira
 no alto à direita — editar e remover ficam na própria caixa, não em botões
 soltos acima dela. Enquanto não há carro, o topo mostra **Cadastrar carro**.
 
-O **Painel de manutenção** fica numa tela própria, aberta pelo botão em Meu
+O **Painel de Manutenção** fica numa tela própria, aberta pelo botão em Meu
 carro — que mostra, ao lado do nome, quantos itens estão vencidos ou próximos.
 
 **Adicionar manutenção** é o botão ao lado dele, para o serviço que não está na
@@ -135,7 +137,7 @@ conta nos resumos do período, no histórico e nos relatórios. Excluir a
 manutenção também tira o gasto. A quilometragem informada atualiza o odômetro
 quando é maior que a registrada.
 
-### Painel de manutenção por tipo de motor
+### Painel de Manutenção por tipo de motor
 
 | Motor | Itens |
 |---|---|

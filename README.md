@@ -84,9 +84,13 @@ ele. Ele existe por três motivos:
 
 | Motor | Itens |
 |---|---|
-| Combustão | óleo do motor, fluido de freio, filtros, arrefecimento, pneus |
+| Combustão | óleo do motor, filtro de óleo, filtro de ar do motor, filtro de combustível, filtro de cabine, fluido de freio, arrefecimento, pneus |
 | Híbrido | os de combustão + bateria de tração |
-| Elétrico | fluido de freio, filtro do ar-condicionado, arrefecimento da bateria, óleo do redutor, bateria de tração, pneus |
+| Elétrico | filtro de cabine, fluido de freio, arrefecimento da bateria, óleo do redutor, bateria de tração, pneus |
+
+Cada filtro é um item próprio, com seu registro e seu prazo. O de cabine é o
+único que todo carro tem; os de óleo, de ar do motor e de combustível dependem
+de motor a combustão e somem do painel num carro elétrico.
 
 Carro elétrico não troca óleo de motor nem filtro de combustível, e o painel já
 sai sem esses itens. Trocar o tipo de motor no cadastro remonta o painel e

@@ -339,8 +339,11 @@ function seed(){
  }
  return {version:1,seedDate:localDate(),goal:300,km:80642,rides,expenses,shifts,receipts:[],activeShift:{id:'demo-s0',date:dateAt(0),startKm:80500,startedAt:Date.now()-375*60000},platforms:['Uber','99','Particular'],vehicle:null,servicePlan:'combustao',vehicleNudge:'on',services:[
   {id:'oil',name:'Óleo do motor',icon:'drop',lastKm:71000,lastDate:dateAt(-125),nextKm:81000,nextDate:dateAt(40)},
+  {id:'filter-oil',name:'Filtro de óleo',icon:'filter',lastKm:71000,lastDate:dateAt(-125),nextKm:81000,nextDate:dateAt(40)},
+  {id:'filter-air',name:'Filtro de ar do motor',icon:'filter',lastKm:78000,lastDate:dateAt(-60),nextKm:88000,nextDate:dateAt(220)},
+  {id:'filter-fuel',name:'Filtro de combustível',icon:'filter',lastKm:60000,lastDate:dateAt(-330),nextKm:100000,nextDate:dateAt(400)},
+  {id:'filter-cabin',name:'Filtro de cabine',icon:'filter',lastKm:78000,lastDate:dateAt(-60),nextKm:null,nextDate:dateAt(25)},
   {id:'brake',name:'Fluido de freio',icon:'tool',lastKm:51000,lastDate:dateAt(-732),nextKm:null,nextDate:dateAt(-2)},
-  {id:'filters',name:'Filtros',icon:'filter',lastKm:78000,lastDate:dateAt(-60),nextKm:88000,nextDate:dateAt(120)},
   {id:'coolant',name:'Arrefecimento',icon:'drop',lastKm:62000,lastDate:dateAt(-290),nextKm:102000,nextDate:dateAt(440)},
   {id:'tires',name:'Pneus e alinhamento',icon:'tool',lastKm:null,lastDate:null,nextKm:null,nextDate:null}
  ]};
@@ -709,14 +712,19 @@ const vehicleSpec=v=>[v.version,v.fuel,v.gear&&v.gear!=='Não informar'?v.gear:n
 const vehicleEngineText=v=>v.cc?Number(v.cc).toFixed(1)+(v.turbo?' turbo':''):'';
 
 /* ---- painel de manutenção conforme o motor ---- */
+/* Cada filtro tem o próprio ritmo, então cada um é um item. O de cabine é o
+   único que todo carro tem; os outros três dependem de motor a combustão e
+   somem do painel quando o carro é elétrico. */
 const SERVICE_PLANS={
- combustao:[['oil','Óleo do motor','drop'],['brake','Fluido de freio','tool'],['filters','Filtros','filter'],['coolant','Arrefecimento','drop'],['tires','Pneus e alinhamento','tool']],
- hibrido:[['oil','Óleo do motor','drop'],['brake','Fluido de freio','tool'],['filters','Filtros','filter'],['coolant','Arrefecimento','drop'],['battery','Bateria de tração','battery'],['tires','Pneus e alinhamento','tool']],
- eletrico:[['brake','Fluido de freio','tool'],['cabin','Filtro do ar-condicionado','filter'],['coolant','Arrefecimento da bateria','drop'],['reducer','Óleo do redutor','drop'],['battery','Bateria de tração','battery'],['tires','Pneus e alinhamento','tool']]
+ combustao:[['oil','Óleo do motor','drop'],['filter-oil','Filtro de óleo','filter'],['filter-air','Filtro de ar do motor','filter'],['filter-fuel','Filtro de combustível','filter'],['filter-cabin','Filtro de cabine','filter'],['brake','Fluido de freio','tool'],['coolant','Arrefecimento','drop'],['tires','Pneus e alinhamento','tool']],
+ hibrido:[['oil','Óleo do motor','drop'],['filter-oil','Filtro de óleo','filter'],['filter-air','Filtro de ar do motor','filter'],['filter-fuel','Filtro de combustível','filter'],['filter-cabin','Filtro de cabine','filter'],['brake','Fluido de freio','tool'],['coolant','Arrefecimento','drop'],['battery','Bateria de tração','battery'],['tires','Pneus e alinhamento','tool']],
+ eletrico:[['filter-cabin','Filtro de cabine','filter'],['brake','Fluido de freio','tool'],['coolant','Arrefecimento da bateria','drop'],['reducer','Óleo do redutor','drop'],['battery','Bateria de tração','battery'],['tires','Pneus e alinhamento','tool']]
 };
+/* De "Filtros" num item só para um item por filtro. */
+const RENAMED_SERVICES={filters:'filter-oil',cabin:'filter-cabin'};
 const PLAN_NOTE={
- eletrico:'Carro elétrico: o painel já vem sem troca de óleo do motor e sem filtro de combustível. Ficaram os itens que este carro realmente pede — freios, arrefecimento da bateria, redutor e pneus.',
- hibrido:'Carro híbrido: o painel mantém os itens do motor a combustão e acrescenta a bateria de tração.',
+ eletrico:'Carro elétrico: saem do painel a troca de óleo do motor e os filtros de óleo, de ar do motor e de combustível, que este carro não tem. Ficam o filtro de cabine, os freios, o arrefecimento da bateria, o redutor e os pneus.',
+ hibrido:'Carro híbrido: o painel mantém os itens do motor a combustão, filtros inclusive, e acrescenta a bateria de tração.',
  combustao:''
 };
 /* Ao mudar o tipo de motor, os itens que continuam no plano conservam o que já
@@ -1156,6 +1164,11 @@ function normalizeState(){
  if(!state.vehicleNudge)state.vehicleNudge='on';
  if(!Array.isArray(state.platforms)||!state.platforms.length)state.platforms=DEFAULT_PLATFORMS.slice();
  if(!Array.isArray(state.receipts))state.receipts=[];
+ /* o registro do antigo item "Filtros" fica com o filtro de óleo, que é o que
+    se troca junto com o óleo; depois o plano é remontado para o motor em uso */
+ state.services.forEach(s=>{if(RENAMED_SERVICES[s.id])s.id=RENAMED_SERVICES[s.id];});
+ const plano=vehiclePlan();
+ if((SERVICE_PLANS[plano]||[]).some(([id])=>!state.services.some(s=>s.id===id)))applyServicePlan(plano);
  if(rideFilter!=='Todas'&&!platformList().includes(rideFilter))rideFilter='Todas';
 }
 const actions={

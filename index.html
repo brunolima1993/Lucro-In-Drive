@@ -213,9 +213,14 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .page-link{width:100%;justify-content:space-between;margin-bottom:10px}
 .page-link-note{margin-left:auto;font-size:12px;font-weight:500;color:var(--muted)}
 .page-link svg:last-child{margin-left:auto}
-.year-chips{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
-.year-chips button{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:9px 18px;font-size:13px;font-weight:600;min-height:40px;color:var(--muted)}
-.year-chips button[aria-pressed="true"]{background:var(--lime);border-color:var(--lime);color:#1d2816}
+.year-picker{display:flex;align-items:center;gap:8px;background:none;padding:0;font-size:16px;font-weight:600;color:var(--lime);min-height:40px}
+.year-picker strong{font-weight:650}
+.year-picker svg{width:18px;height:18px;transition:transform .2s}
+.year-picker.open svg{transform:rotate(90deg)}
+.year-list{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-bottom:18px;padding:14px;border:1px solid var(--border);border-radius:16px;background:var(--surface)}
+.year-list button{border:1px solid var(--border);background:var(--raised);border-radius:999px;padding:9px 18px;font-size:13px;font-weight:600;min-height:40px;color:var(--muted)}
+.year-list button[aria-pressed="true"]{background:var(--lime);border-color:var(--lime);color:#1d2816}
+@media(prefers-reduced-motion:reduce){.year-picker svg{transition:none}}
 .history-total{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;margin-bottom:18px;border:1px solid var(--border);border-radius:14px;background:var(--surface);font-size:13px;color:var(--muted)}
 .history-total strong{font-size:18px}
 .fold-box{border:1px solid var(--border);border-radius:16px;background:var(--surface);overflow:hidden;margin-bottom:10px}
@@ -460,7 +465,7 @@ function financePage(){const t=totals(),fuel=t.expenses.filter(e=>e.category==='
 /* ===== Histórico de gastos =====
    Tela própria, com um ano por vez e cada mês numa caixa que abre e fecha —
    assim uma lista longa não empurra o resto da tela de Gastos para baixo. */
-let historyYear=new Date().getFullYear(),historyOpen=null;
+let historyYear=new Date().getFullYear(),historyOpen=null,historyYearOpen=false;
 const monthName=(y,m)=>new Date(y,m,1).toLocaleDateString('pt-BR',{month:'long'});
 function toggleHistoryMonth(m){
  if(historyOpen===null)historyOpen=new Set();
@@ -468,8 +473,9 @@ function toggleHistoryMonth(m){
  render();
 }
 function expenseHistoryPage(){
- const anos=[...new Set(state.expenses.map(e=>Number(e.date.slice(0,4))))].sort((a,b)=>b-a);
- if(!anos.length)anos.push(historyYear);
+ /* O ano corrente entra sempre na lista, tenha lançamento ou não: assim que
+    vira o ano, 2027 aparece sozinho, depois 2028, e por aí vai. */
+ const anos=[...new Set([...state.expenses.map(e=>Number(e.date.slice(0,4))),new Date().getFullYear()])].sort((a,b)=>b-a);
  if(!anos.includes(historyYear))historyYear=anos[0];
  const doAno=state.expenses.filter(e=>Number(e.date.slice(0,4))===historyYear&&(expenseFilter==='Todas'||e.category===expenseFilter))
   .sort((a,b)=>b.date.localeCompare(a.date));
@@ -477,8 +483,8 @@ function expenseHistoryPage(){
  if(historyOpen===null)historyOpen=new Set(meses.length?[meses[0]]:[]);
  const total=doAno.reduce((a,e)=>a+e.amount,0);
  return title('Histórico de gastos','Escolha o ano e abra o mês que quiser conferir.')+
- `<div class="year-chips" role="group" aria-label="Filtrar por ano">${anos.map(a=>`<button type="button" data-year="${a}" aria-pressed="${a===historyYear}">${a}</button>`).join('')}</div>
- <div class="list-toolbar"><h2 class="accent">Lançamentos de ${historyYear}</h2><select id="expense-filter" aria-label="Filtrar gastos por categoria">${['Todas',...categories].map(x=>`<option ${expenseFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
+ `<div class="list-toolbar"><button type="button" class="year-picker ${historyYearOpen?'open':''}" data-action="toggleYearPicker" aria-expanded="${historyYearOpen}">Lançamentos de <strong>${historyYear}</strong>${icon('chevron')}</button><select id="expense-filter" aria-label="Filtrar gastos por categoria">${['Todas',...categories].map(x=>`<option ${expenseFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
+ ${historyYearOpen?`<div class="year-list" role="group" aria-label="Escolher o ano">${anos.map(a=>`<button type="button" data-year="${a}" aria-pressed="${a===historyYear}">${a}</button>`).join('')}</div>`:''}
  <div class="history-total"><span>Total no ano${expenseFilter==='Todas'?'':' · '+esc(expenseFilter)}</span><strong class="mono negative">${money(total)}</strong></div>
  ${meses.length?meses.map(m=>{
   const itens=doAno.filter(e=>Number(e.date.slice(5,7))-1===m),soma=itens.reduce((a,e)=>a+e.amount,0),aberto=historyOpen.has(m);
@@ -1197,7 +1203,7 @@ const actions={
 ride:showRide,expense:showExpense,close:closeDialog,goal:()=>openDialog('Sua meta diária',form('goal-form','Quanto você quer alcançar depois de descontar os gastos do dia?',field('Meta de resultado (R$)','goal','number',state.goal,'required min="1" max="999999" step="0.01" inputmode="decimal"',true),'Salvar meta')),odometer:()=>openDialog('Atualizar quilometragem',form('odometer-form','Informe o número que aparece no odômetro do carro. Os prazos das revisões serão atualizados.',field('Quilometragem atual','km','number',state.km,`required min="${state.km}" max="9999999" step="1" inputmode="numeric"`,true),'Atualizar km')),startShift:()=>{if(state.activeShift)return toast('Você já tem uma jornada em andamento.');if(journeyOf(localDate()))return toast('A jornada de hoje já foi encerrada. É uma por dia.');openDialog('Iniciar jornada',form('start-form','Registre a quilometragem antes de começar. A distância será calculada ao encerrar.',field('Quilometragem inicial','km','number',state.km,`required min="${state.km}" max="9999999" step="1" inputmode="numeric"`,true),'Iniciar jornada'));},endShift:()=>{if(!state.activeShift)return;openDialog('Encerrar jornada',form('end-form',`Saída aos ${number(state.activeShift.startKm)} km. A leitura final também atualizará o painel de manutenção.`,field('Quilometragem final','km','number',state.km,`required min="${Math.max(state.km,state.activeShift.startKm)}" max="9999999" step="1" inputmode="numeric"`,true),'Encerrar jornada'));},platforms:showPlatforms,addVehicle:()=>showVehicle(false),editVehicle:()=>showVehicle(true),
 removeVehicle:()=>openDialog('Remover o carro?',`<p class="dialog-intro">O cadastro do carro e a cotação salva da FIPE saem deste navegador. Corridas, gastos e jornadas continuam como estão.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn danger" data-action="confirmRemoveVehicle">Remover carro</button></div>`),
 confirmRemoveVehicle:()=>{state.vehicle=null;resetFipeState();save();closeDialog();render();toast('Carro removido. Você pode cadastrar de novo quando quiser.');},
-dismissNudge:()=>{state.vehicleNudge='off';save();render();},back:()=>{const sub=SUBVIEWS[view];go(sub?(sub.back||sub.parent):'inicio');},toggleHomeRides:()=>{homeRidesOpen=!homeRidesOpen;render();},removeReceipt:()=>{state.receipts=state.receipts.filter(r=>r.id!==receiptToRemove);if(receiptsOpen)receiptsOpen.delete(receiptToRemove);receiptToRemove=null;save();closeDialog();render();toast('Comprovante excluído.');},
+dismissNudge:()=>{state.vehicleNudge='off';save();render();},back:()=>{const sub=SUBVIEWS[view];go(sub?(sub.back||sub.parent):'inicio');},toggleHomeRides:()=>{homeRidesOpen=!homeRidesOpen;render();},toggleYearPicker:()=>{historyYearOpen=!historyYearOpen;render();},removeReceipt:()=>{state.receipts=state.receipts.filter(r=>r.id!==receiptToRemove);if(receiptsOpen)receiptsOpen.delete(receiptToRemove);receiptToRemove=null;save();closeDialog();render();toast('Comprovante excluído.');},
 fipeAuto:fipeAuto,fipeList:fipeList,fipeRefresh:fipeRefresh,fipeConfirmYear:fipeConfirmYear,
 fipeManual:()=>{
  const v=state.vehicle;
@@ -1207,7 +1213,7 @@ fipeManual:()=>{
  openDialog('Anotar o valor da FIPE',form('fipe-manual-form','Consultou no site da FIPE? Anote aqui o valor que apareceu. Ele fica salvo apenas neste navegador.',field('Valor (R$)','value','number',atual,'required min="0.01" max="9999999" step="0.01" inputmode="decimal" placeholder="0,00"')+field('Ano do modelo','modelYear','number',v.year||'',`min="1950" max="${maxYear()}" step="1" inputmode="numeric"`)+`<p class="small muted" style="grid-column:1/-1">A consulta oficial fica em <a href="${FIPE_SITE}" target="_blank" rel="noopener noreferrer">veiculos.fipe.org.br</a>.</p>`,'Salvar valor'));
 },
 about:()=>openDialog('Bem-vindo ao LucroInDrive',`<span class="tag ok">Primeiro esboço</span><p class="body-text" style="margin-top:20px">Explore corridas, gastos, jornada, metas e manutenção com dados de exemplo. Os lançamentos alteram os resumos e ficam salvos apenas neste navegador.</p><ul><li>O login é demonstrativo; não há autenticação ou backup online.</li><li>A cotação da FIPE é consultada de verdade, em uma API pública, depois que você cadastra o carro.</li><li>Este app é independente do TMyCar.</li></ul><p class="body-text">Para começar novamente, use “Restaurar demonstração”.</p><button class="btn primary" style="width:100%;margin-top:15px" data-action="close">Explorar o app</button><button class="btn secondary" style="width:100%;margin-top:10px" data-action="logout">Voltar ao login</button>`),reset:()=>openDialog('Restaurar demonstração?',`<p class="dialog-intro">Os lançamentos feitos neste esboço serão removidos deste navegador. Os dados de exemplo serão recriados.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn primary" data-action="confirmReset">Restaurar</button></div>`),confirmReset:()=>{state=seed();period='today';rideFilter='Todas';expenseFilter='Todas';vehicleDraft=null;resetFipeState();save();closeDialog();render();toast('Demonstração restaurada.');}};
-document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.year){historyYear=Number(el.dataset.year);historyOpen=null;render();}if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
+document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.year){historyYear=Number(el.dataset.year);historyOpen=null;historyYearOpen=false;render();}if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
 document.addEventListener('change',e=>{if(e.target.id==='consent-confirm'){consentPending=e.target.checked;$('consent-enter').disabled=!consentPending;$('consent-status').textContent=consentPending?'Tudo pronto para continuar.':'Confirme sua idade e o aceite para continuar.';}if(e.target.id==='ride-filter'){rideFilter=e.target.value;render();}if(e.target.id==='expense-filter'){expenseFilter=e.target.value;historyOpen=null;render();}if(vehicleDraft&&e.target.form&&e.target.form.id==='vehicle-form'&&['brand','model','versionIdx','fuel'].includes(e.target.name)){readVehicleDraft();syncVehicleDraft(e.target.name);repaintVehicleForm(e.target.name);}});
 document.addEventListener('input',e=>{if(e.target.id==='fipe-search'){fipeState.filter=e.target.value;if($('fipe-options'))$('fipe-options').innerHTML=fipeOptions();}if(receiptDraft&&e.target.form&&e.target.form.id==='receipt-form'){readReceiptDraft();if($('receipt-preview'))$('receipt-preview').textContent=receiptText(receiptDraft);}});
 document.addEventListener('submit',e=>{

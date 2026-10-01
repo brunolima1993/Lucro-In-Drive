@@ -80,6 +80,9 @@ ele. Ele existe por três motivos:
 - montar o **painel de manutenção** conforme o motor;
 - manter quilometragem e prazos de revisão no lugar.
 
+O **Painel de manutenção** fica numa tela própria, aberta pelo botão em Meu
+carro — que mostra, ao lado do nome, quantos itens estão vencidos ou próximos.
+
 ### Painel de manutenção por tipo de motor
 
 | Motor | Itens |

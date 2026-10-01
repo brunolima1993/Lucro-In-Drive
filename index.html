@@ -159,7 +159,7 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .fipe-card{text-align:center}
 .car-grid .card-heading{justify-content:center}
 .car-grid .card-heading h2,.fipe-card h2{color:var(--lime)}
-.car-grid .data-warning{text-align:center}
+.data-warning{text-align:center}
 .report-grid h2,.expense-breakdown h2{color:var(--lime);text-align:center}
 /* o quadro do resultado deixa de ser um bloco verde e volta a ser um painel comum */
 .balance{background:var(--surface);color:var(--text);border-color:var(--border)}
@@ -211,6 +211,7 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .topbar-back{color:var(--lime)}
 .topbar-back svg{transform:rotate(180deg);width:22px;height:22px}
 .page-link{width:100%;justify-content:space-between;margin-bottom:10px}
+.page-link-note{margin-left:auto;font-size:12px;font-weight:500;color:var(--muted)}
 .page-link svg:last-child{margin-left:auto}
 .year-chips{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
 .year-chips button{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:9px 18px;font-size:13px;font-weight:600;min-height:40px;color:var(--muted)}
@@ -362,6 +363,7 @@ let view='inicio',period='today',rideFilter='Todas',expenseFilter='Todas',toastT
 const navigation=[['inicio','Início','grid'],['corridas','Corridas','route'],['financeiro','Financeiro','money'],['carro','Meu carro','wheel']];
 /* telas que não ficam na barra de baixo: abrem a partir da tela-mãe */
 const SUBVIEWS={'corridas-jornadas':{label:'Jornadas',parent:'corridas'},
+ 'carro-manutencao':{label:'Painel de manutenção',parent:'carro'},
  'corridas-comprovante':{label:'Gerar comprovante',parent:'corridas'},
  'corridas-comprovantes':{label:'Comprovantes gerados',parent:'corridas',back:'corridas-comprovante'},
  'financeiro-historico':{label:'Histórico de gastos',parent:'financeiro'},
@@ -666,7 +668,7 @@ $('app-shell').classList.toggle('terms-mode',needsConsent);
 if(!demoSignedIn){if(location.hash!=='#login')history.replaceState(null,'','#login');$('view').innerHTML=loginScreen();document.title='LucroInDrive — Login';return;}
 if(needsConsent){if(location.hash!=='#termos')history.replaceState(null,'','#termos');$('view').innerHTML=termsScreen();document.title='LucroInDrive — Antes de começar';return;}
 if(location.hash==='#termos'||location.hash==='#login')history.replaceState(null,'','#inicio');
-const route=location.hash.slice(1);view=navigation.some(n=>n[0]===route)||SUBVIEWS[route]?route:'inicio';const sub=SUBVIEWS[view],navView=sub?sub.parent:view,pageName=sub?sub.label:navigation.find(n=>n[0]===view)[1];$('desktop-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}${l}</button>`).join('');$('mobile-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}<span>${l}</span></button>`).join('');$('breadcrumb-name').textContent=pageName;$('topbar-back').hidden=!sub;$('side-car-name').textContent=state.vehicle?[vehicleName(state.vehicle),state.vehicle.year].filter(Boolean).join(' · '):'Nenhum carro cadastrado';$('side-km').textContent=number(state.km)+' km registrados';$('header-date').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});$('view').innerHTML=({inicio:home,corridas:ridesPage,financeiro:financePage,carro:carPage,'corridas-jornadas':journeysPage,'corridas-comprovante':receiptPage,'corridas-comprovantes':receiptsPage,'financeiro-historico':expenseHistoryPage,'financeiro-relatorios':reportsPage})[view]();document.title='LucroInDrive — '+pageName;updateStorageNote();}
+const route=location.hash.slice(1);view=navigation.some(n=>n[0]===route)||SUBVIEWS[route]?route:'inicio';const sub=SUBVIEWS[view],navView=sub?sub.parent:view,pageName=sub?sub.label:navigation.find(n=>n[0]===view)[1];$('desktop-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}${l}</button>`).join('');$('mobile-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}<span>${l}</span></button>`).join('');$('breadcrumb-name').textContent=pageName;$('topbar-back').hidden=!sub;$('side-car-name').textContent=state.vehicle?[vehicleName(state.vehicle),state.vehicle.year].filter(Boolean).join(' · '):'Nenhum carro cadastrado';$('side-km').textContent=number(state.km)+' km registrados';$('header-date').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});$('view').innerHTML=({inicio:home,corridas:ridesPage,financeiro:financePage,carro:carPage,'corridas-jornadas':journeysPage,'carro-manutencao':maintenancePage,'corridas-comprovante':receiptPage,'corridas-comprovantes':receiptsPage,'financeiro-historico':expenseHistoryPage,'financeiro-relatorios':reportsPage})[view]();document.title='LucroInDrive — '+pageName;updateStorageNote();}
 function go(v){if(location.hash==='#'+v){render();return;}location.hash=v;}
 window.addEventListener('hashchange',()=>{render();$('main').scrollTo({top:0,behavior:'instant'});});
 function toast(msg){clearTimeout(toastTimer);$('toast').textContent=msg;$('toast').classList.remove('hidden');toastTimer=setTimeout(()=>$('toast').classList.add('hidden'),4200);}
@@ -824,12 +826,24 @@ function carPage(){
    :button('Cadastrar carro','addVehicle'));
  const plan=vehiclePlan();
  const note=PLAN_NOTE[plan]?`<div class="msgbox info">${PLAN_NOTE[plan]}</div>`:'';
- return head+(v?vehicleHero(v):'')+`<div class="car-grid"><section>
- <div class="card-heading"><h2>Painel de manutenção</h2><span class="small muted">${state.services.length} itens</span></div>
- ${note}
- <div class="maintenance-grid">${state.services.map(s=>`<article class="panel maintenance-card"><div class="maintenance-top"><div class="maintenance-name"><span class="square-icon">${icon(s.icon)}</span><h3>${esc(s.name)}</h3></div>${tag(status(s))}</div><div class="maintenance-data"><div><small>Última revisão</small><strong>${s.lastKm!=null?number(s.lastKm)+' km':'Sem registro'}</strong><small>${s.lastDate?prettyDate(s.lastDate):'—'}</small></div><div><small>Próxima revisão</small><strong>${s.nextKm!=null?number(s.nextKm)+' km':s.nextDate?'Por data':'A definir'}</strong><small>${s.nextDate?prettyDate(s.nextDate):s.nextKm!=null?'Prazo por quilometragem':'Prazo não definido'}</small></div></div><div class="maintenance-bottom"><p>${status(s).detail}</p><button class="btn secondary small-btn" data-service="${esc(s.id)}">Registrar revisão</button></div></article>`).join('')}</div>
- <p class="data-warning">Ao registrar uma revisão, informe o próximo prazo conforme o manual do seu carro. Os prazos que já vêm preenchidos nesta prévia são exemplos.</p></section>
- ${fipeCard()}</div>`;
+ return head+(v?vehicleHero(v):'')+
+ `<button class="btn secondary page-link" data-view="carro-manutencao">${icon('tool')}Painel de manutenção<span class="page-link-note">${pendingServices()}</span>${icon('chevron')}</button>`+
+ `<div class="car-grid">${fipeCard()}</div>`;
+}
+/* Quantos itens pedem atenção: é o que justifica abrir o painel. */
+function pendingServices(){
+ const atrasados=state.services.filter(s=>status(s).cls==='bad').length;
+ const proximos=state.services.filter(s=>status(s).cls==='warn').length;
+ if(atrasados)return `${atrasados} ${atrasados===1?'vencida':'vencidas'}`;
+ if(proximos)return `${proximos} ${proximos===1?'próxima':'próximas'}`;
+ return `${state.services.length} itens`;
+}
+function maintenancePage(){
+ const plan=vehiclePlan();
+ const note=PLAN_NOTE[plan]?`<div class="msgbox info">${PLAN_NOTE[plan]}</div>`:'';
+ return title('Painel de manutenção','Cada revisão com o prazo que o seu carro pede.')+note+
+ `<div class="maintenance-grid">${state.services.map(s=>`<article class="panel maintenance-card"><div class="maintenance-top"><div class="maintenance-name"><span class="square-icon">${icon(s.icon)}</span><h3>${esc(s.name)}</h3></div>${tag(status(s))}</div><div class="maintenance-data"><div><small>Última revisão</small><strong>${s.lastKm!=null?number(s.lastKm)+' km':'Sem registro'}</strong><small>${s.lastDate?prettyDate(s.lastDate):'—'}</small></div><div><small>Próxima revisão</small><strong>${s.nextKm!=null?number(s.nextKm)+' km':s.nextDate?'Por data':'A definir'}</strong><small>${s.nextDate?prettyDate(s.nextDate):s.nextKm!=null?'Prazo por quilometragem':'Prazo não definido'}</small></div></div><div class="maintenance-bottom"><p>${status(s).detail}</p><button class="btn secondary small-btn" data-service="${esc(s.id)}">Registrar revisão</button></div></article>`).join('')}</div>
+ <p class="data-warning">Ao registrar uma revisão, informe o próximo prazo conforme o manual do seu carro. Os prazos que já vêm preenchidos nesta prévia são exemplos.</p>`;
 }
 
 /* ---- Tabela FIPE (consulta real, API pública da Parallelum) ---- */

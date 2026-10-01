@@ -42,9 +42,10 @@ carimbo em cada corrida.
 
 No Início, "Últimas corridas" mostra as corridas da jornada aberta e se recolhe
 pela seta ao lado do título. Ao encerrar a jornada a lista zera, e o dia fica
-guardado em **Jornadas**, o botão da tela de Corridas: uma caixa por dia
-("Jornada 30/09/2026"), com as corridas, o tempo, a distância e o total do dia,
-abrindo e fechando como os meses do histórico de gastos.
+guardado em **Jornadas**, o botão da tela de Corridas. Lá a lista é em dois
+níveis: o mês ("out/2026", com quantas jornadas e o total) abre e, dentro dele,
+cada dia ("Jornada 01/10", com as corridas, o tempo, a distância e o total)
+abre por sua vez.
 
 Enquanto a jornada está aberta, a distância do dia é o odômetro menos a
 quilometragem de saída; ao encerrar, vale a leitura final.

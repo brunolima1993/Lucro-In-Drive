@@ -215,9 +215,13 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .fold-box.open .fold-chevron,.fold-toggle.open svg{transform:rotate(90deg)}
 .fold-toggle svg{transition:transform .2s}
 .fold-toggle,.fold-toggle:hover{color:var(--lime)}
-.fold-name strong .tag{margin-left:8px;vertical-align:middle}
+.fold-name strong .tag{margin-left:8px;vertical-align:middle;text-transform:none}
 .journey-ride{display:flex;align-items:center;gap:11px;min-width:0}
 .receipt-preview{margin:0;padding:16px;border:1px solid var(--border);border-radius:14px;background:#0f130f;color:var(--text);font-family:inherit;font-size:13.5px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;text-align:left}
+.fold-body>.fold-box{margin:10px 0;border-radius:13px;background:var(--raised)}
+.fold-body>.fold-box:first-child{margin-top:12px}
+.fold-body>.fold-box .fold-head{padding:12px 14px}
+.fold-body>.fold-box .fold-name strong{font-size:13.5px}
 .fold-top{display:flex;align-items:center}
 .fold-top .fold-head{flex:1;min-width:0}
 .fold-del{width:42px;height:42px;min-height:42px;flex-shrink:0;margin-right:8px;color:var(--muted)}
@@ -360,7 +364,14 @@ const journeyRides=j=>j?state.rides.filter(r=>r.date===j.date).sort((a,b)=>(b.da
 const journeyMinutes=j=>j.minutes!=null?j.minutes:Math.max(0,(Date.now()-j.startedAt)/60000);
 const journeyKm=j=>j.endKm!=null?j.endKm-j.startKm:Math.max(0,state.km-j.startKm);
 const journeyRunning=j=>j.endKm==null;
-let homeRidesOpen=true,journeysOpen=null;
+let homeRidesOpen=true,journeysOpen=null,journeyMonthsOpen=null;
+const monthLabel=mes=>new Date(Number(mes.slice(0,4)),Number(mes.slice(5,7))-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace('.','')+'/'+mes.slice(0,4);
+const dayLabel=date=>date.slice(8,10)+'/'+date.slice(5,7);
+function toggleJourneyMonth(mes){
+ if(journeyMonthsOpen===null)journeyMonthsOpen=new Set();
+ journeyMonthsOpen.has(mes)?journeyMonthsOpen.delete(mes):journeyMonthsOpen.add(mes);
+ render();
+}
 function toggleJourney(date){
  if(journeysOpen===null)journeysOpen=new Set();
  journeysOpen.has(date)?journeysOpen.delete(date):journeysOpen.add(date);
@@ -469,18 +480,30 @@ function expenseHistoryPage(){
    Um dia de trabalho por caixa, com as corridas registradas nele. */
 function journeysPage(){
  const todas=[...(state.activeShift?[state.activeShift]:[]),...state.shifts].sort((a,b)=>b.date.localeCompare(a.date));
+ const meses=[...new Set(todas.map(j=>j.date.slice(0,7)))];
+ if(journeyMonthsOpen===null)journeyMonthsOpen=new Set(meses.length?[meses[0]]:[]);
  if(journeysOpen===null)journeysOpen=new Set(todas.length?[todas[0].date]:[]);
- return title('Suas jornadas','Cada dia de trabalho com as corridas que você registrou nele.',
+ return title('Suas jornadas','Abra o mês e depois o dia para ver as corridas registradas nele.',
   `<button class="btn secondary back-link" data-view="corridas">${icon('chevron')}Voltar às corridas</button>`)+
- (todas.length?todas.map(j=>{
-  const corridas=journeyRides(j),ganhos=corridas.reduce((a,r)=>a+r.amount,0),aberta=journeysOpen.has(j.date),andamento=journeyRunning(j);
-  return `<div class="fold-box ${aberta?'open':''}"><button type="button" class="fold-head" data-journey="${esc(j.date)}" aria-expanded="${aberta}">
+ (meses.length?meses.map(mes=>{
+  const doMes=todas.filter(j=>j.date.startsWith(mes));
+  const ganhos=doMes.reduce((a,j)=>a+journeyRides(j).reduce((x,r)=>x+r.amount,0),0);
+  const aberto=journeyMonthsOpen.has(mes);
+  return `<div class="fold-box ${aberto?'open':''}"><button type="button" class="fold-head" data-journey-month="${esc(mes)}" aria-expanded="${aberto}">
    <span class="fold-chevron">${icon('chevron')}</span>
-   <span class="fold-name"><strong>Jornada ${prettyDate(j.date)}${andamento?' <span class="tag ok">Em andamento</span>':''}</strong>
-   <small>${corridas.length} ${corridas.length===1?'corrida':'corridas'} · ${hours(journeyMinutes(j))} · ${number(journeyKm(j))} km</small></span>
+   <span class="fold-name"><strong>${monthLabel(mes)}</strong><small>${doMes.length} ${doMes.length===1?'jornada':'jornadas'}</small></span>
    <span class="fold-total mono">${money(ganhos)}</span></button>
-   ${aberta?`<div class="fold-body">${corridas.length?corridas.map(r=>`<div class="fold-row"><span class="journey-ride">${platformLogo(r.platform)}<strong>${esc(r.platform)}</strong></span><span class="mono">${money(r.amount)}</span></div>`).join(''):'<p class="empty">Nenhuma corrida registrada nesta jornada.</p>'}</div>`:''}</div>`;
+   ${aberto?`<div class="fold-body">${doMes.map(journeyBox).join('')}</div>`:''}</div>`;
  }).join(''):'<p class="empty">Nenhuma jornada registrada ainda. Comece a primeira no Início.</p>');
+}
+function journeyBox(j){
+ const corridas=journeyRides(j),ganhos=corridas.reduce((a,r)=>a+r.amount,0),aberta=journeysOpen.has(j.date),andamento=journeyRunning(j);
+ return `<div class="fold-box ${aberta?'open':''}"><button type="button" class="fold-head" data-journey="${esc(j.date)}" aria-expanded="${aberta}">
+  <span class="fold-chevron">${icon('chevron')}</span>
+  <span class="fold-name"><strong>Jornada ${dayLabel(j.date)}${andamento?' <span class="tag ok">Em andamento</span>':''}</strong>
+  <small>${corridas.length} ${corridas.length===1?'corrida':'corridas'} · ${hours(journeyMinutes(j))} · ${number(journeyKm(j))} km</small></span>
+  <span class="fold-total mono">${money(ganhos)}</span></button>
+  ${aberta?`<div class="fold-body">${corridas.length?corridas.map(r=>`<div class="fold-row"><span class="journey-ride">${platformLogo(r.platform)}<strong>${esc(r.platform)}</strong></span><span class="mono">${money(r.amount)}</span></div>`).join(''):'<p class="empty">Nenhuma corrida registrada nesta jornada.</p>'}</div>`:''}</div>`;
 }
 /* ===== Comprovante de corrida =====
    O texto é fixo; o motorista preenche carro, trajeto, valor e data. O envio
@@ -1152,7 +1175,7 @@ fipeManual:()=>{
  openDialog('Anotar o valor da FIPE',form('fipe-manual-form','Consultou no site da FIPE? Anote aqui o valor que apareceu. Ele fica salvo apenas neste navegador.',field('Valor (R$)','value','number',atual,'required min="0.01" max="9999999" step="0.01" inputmode="decimal" placeholder="0,00"')+field('Ano do modelo','modelYear','number',v.year||'',`min="1950" max="${maxYear()}" step="1" inputmode="numeric"`)+`<p class="small muted" style="grid-column:1/-1">A consulta oficial fica em <a href="${FIPE_SITE}" target="_blank" rel="noopener noreferrer">veiculos.fipe.org.br</a>.</p>`,'Salvar valor'));
 },
 about:()=>openDialog('Bem-vindo ao LucroInDrive',`<span class="tag ok">Primeiro esboço</span><p class="body-text" style="margin-top:20px">Explore corridas, gastos, jornada, metas e manutenção com dados de exemplo. Os lançamentos alteram os resumos e ficam salvos apenas neste navegador.</p><ul><li>O login é demonstrativo; não há autenticação ou backup online.</li><li>A cotação da FIPE é consultada de verdade, em uma API pública, depois que você cadastra o carro.</li><li>Este app é independente do TMyCar.</li></ul><p class="body-text">Para começar novamente, use “Restaurar demonstração”.</p><button class="btn primary" style="width:100%;margin-top:15px" data-action="close">Explorar o app</button><button class="btn secondary" style="width:100%;margin-top:10px" data-action="logout">Voltar ao login</button>`),reset:()=>openDialog('Restaurar demonstração?',`<p class="dialog-intro">Os lançamentos feitos neste esboço serão removidos deste navegador. Os dados de exemplo serão recriados.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn primary" data-action="confirmReset">Restaurar</button></div>`),confirmReset:()=>{state=seed();period='today';rideFilter='Todas';expenseFilter='Todas';vehicleDraft=null;resetFipeState();save();closeDialog();render();toast('Demonstração restaurada.');}};
-document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.year){historyYear=Number(el.dataset.year);historyOpen=null;render();}if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
+document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.year){historyYear=Number(el.dataset.year);historyOpen=null;render();}if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
 document.addEventListener('change',e=>{if(e.target.id==='consent-confirm'){consentPending=e.target.checked;$('consent-enter').disabled=!consentPending;$('consent-status').textContent=consentPending?'Tudo pronto para continuar.':'Confirme sua idade e o aceite para continuar.';}if(e.target.id==='ride-filter'){rideFilter=e.target.value;render();}if(e.target.id==='expense-filter'){expenseFilter=e.target.value;historyOpen=null;render();}if(vehicleDraft&&e.target.form&&e.target.form.id==='vehicle-form'&&['brand','model','versionIdx','fuel'].includes(e.target.name)){readVehicleDraft();syncVehicleDraft(e.target.name);repaintVehicleForm(e.target.name);}});
 document.addEventListener('input',e=>{if(e.target.id==='fipe-search'){fipeState.filter=e.target.value;if($('fipe-options'))$('fipe-options').innerHTML=fipeOptions();}if(receiptDraft&&e.target.form&&e.target.form.id==='receipt-form'){readReceiptDraft();if($('receipt-preview'))$('receipt-preview').textContent=receiptText(receiptDraft);}});
 document.addEventListener('submit',e=>{

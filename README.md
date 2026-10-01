@@ -13,6 +13,15 @@ npx http-server . -p 8080   # depois abra http://localhost:8080
 Os lançamentos ficam no `localStorage` do navegador. Não há backend, conta real
 nem backup online.
 
+## Ícone
+
+O ícone do app — o volante com o gráfico em alta sobre o verde do layout — está
+em `icone.png` (512 px, cantos transparentes) para quando houver um pacote de
+verdade. No protótipo ele vai embutido no `index.html`, em WebP de 192 px dentro
+da variável `--icon-app` do CSS: é a marca ao lado do nome no topo e no login, e
+o script aponta o favicon da aba e o atalho de tela inicial para a mesma
+variável, para a imagem não ficar gravada duas vezes no arquivo.
+
 ## Financeiro
 
 O módulo antes chamado Gastos, hoje o guarda-chuva do que é financeiro. Na

@@ -293,7 +293,6 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 @keyframes spin{to{transform:rotate(360deg)}}
 .nudge{padding:17px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
 .nudge-copy{flex:1;min-width:200px}
-.nudge-copy p{color:var(--muted);font-size:13.5px;margin-top:5px}
 @media(prefers-reduced-motion:reduce){.spin{animation-duration:2.6s}}
 @media(max-width:500px){.nudge .car-actions .btn{flex:1}.opt-list{max-height:52vh}}
 </style>
@@ -459,7 +458,7 @@ function home(){
  const recent=journeyRides(state.activeShift);
  const services=[...state.services].sort((a,b)=>status(b).rank-status(a).rank).slice(0,3);
  return title('Seu dia, em números.','Mais clareza para cada quilômetro.',button('Adicionar gasto','expense','plus','secondary')+button('Nova corrida','ride'))+
- (!state.vehicle&&state.vehicleNudge!=='off'?`<section class="panel nudge"><span class="square-icon">${icon('car')}</span><div class="nudge-copy"><h3>Cadastre seu carro — se quiser</h3><p>Leva menos de um minuto, libera a consulta à Tabela FIPE e monta o painel de manutenção do seu motor: a combustão, híbrido ou elétrico.</p></div><div class="car-actions">${button('Cadastrar carro','addVehicle','plus')}${button('Agora não','dismissNudge','close','quiet')}</div></section>`:'')+
+ (!state.vehicle&&state.vehicleNudge!=='off'?`<section class="panel nudge"><div class="nudge-copy"><h3>Cadastre seu carro — se quiser</h3></div><div class="car-actions">${button('Cadastrar carro','addVehicle','plus')}${button('Agora não','dismissNudge','close','quiet')}</div></section>`:'')+
  `<div class="section-row"><span class="caption">Visão geral</span></div>
  <div class="overview-top"><section class="panel balance"><div><div class="balance-top"><span>Seu resultado hoje</span>${icon('arrowup')}</div><div class="balance-number mono"><span class="currency">R$</span>${numberBR(t.balance)}</div></div><div class="balance-breakdown"><div><span class="circle-icon">${icon('arrowup')}</span><div><p>Ganhos</p><strong class="mono">${money(t.revenue)}</strong></div></div><div><span class="circle-icon">${icon('arrowdown')}</span><div><p>Gastos</p><strong class="mono">${money(t.cost)}</strong></div></div></div></section>
  <section class="panel panel-pad goal-card"><div class="goal-head"><h2>Meta do dia</h2><button class="icon-btn" data-action="goal" aria-label="Editar meta diária">${icon('edit')}</button></div><div class="goal-body"><div class="goal-ring" role="img" aria-label="${Math.min(balance>=state.goal?100:99,Math.round(pct))}% da meta diária"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" stroke="#35412e"/><circle cx="60" cy="60" r="50" stroke="var(--lime)" stroke-dasharray="${pct*3.14159} 314.159"/></svg><div class="ring-value"><strong class="mono">${Math.min(balance>=state.goal?100:99,Math.round(pct))}%</strong><span>concluído</span></div></div><div class="goal-copy"><p>Objetivo de resultado</p><strong class="mono">${money(state.goal)}</strong><p>${remaining>0?`Faltam <span class="positive">${money(remaining)}</span><br>para chegar lá.`:'<span class="positive">Meta alcançada!</span><br>Seu trabalho rendeu.'}</p></div></div><div class="goal-foot">${icon('flag')}A meta considera os gastos de hoje.</div></section></div>

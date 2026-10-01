@@ -219,19 +219,14 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 #history-year{padding-right:32px}
 .history-total{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;margin-bottom:18px;border:1px solid var(--border);border-radius:14px;background:var(--surface);font-size:13px;color:var(--muted)}
 .history-total strong{font-size:18px}
-.log-item{border:1px solid var(--border);border-radius:16px;background:var(--surface);padding:15px 8px 15px 16px;margin-bottom:10px}
-.log-head{display:flex;align-items:flex-start;gap:10px}
-.log-head strong{flex:1;min-width:0;font-size:14.5px;font-weight:650;overflow-wrap:break-word;padding-top:9px}
-.log-item small{display:block;font-size:12px;color:var(--muted);margin-top:2px;padding-right:8px}
-.log-foot{display:flex;align-items:baseline;gap:12px;margin-top:11px;padding-right:8px}
-.log-foot span{font-size:13px;color:var(--muted);min-width:0;overflow-wrap:break-word}
-.log-foot strong{margin-left:auto;font-size:15px;font-weight:650;flex-shrink:0}
 .center-text{text-align:center}
 .fold-box{border:1px solid var(--border);border-radius:16px;background:var(--surface);overflow:hidden;margin-bottom:10px}
 .fold-box.open{border-color:#4a5643}
 .fold-head{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:none;text-align:left}
 .fold-chevron{display:grid;place-items:center;color:var(--lime);flex-shrink:0;transition:transform .2s}
-.fold-box.open .fold-chevron,.fold-toggle.open svg{transform:rotate(90deg)}
+/* só a seta da própria caixa gira: dentro de um mês aberto, o dia fechado
+   precisa continuar com a seta deitada */
+.fold-box.open>.fold-head>.fold-chevron,.fold-box.open>.fold-top>.fold-head>.fold-chevron,.fold-toggle.open svg{transform:rotate(90deg)}
 .fold-toggle svg{transition:transform .2s}
 .fold-toggle,.fold-toggle:hover{color:var(--lime)}
 .fold-name strong .tag{margin-left:8px;vertical-align:middle;text-transform:none}
@@ -251,6 +246,7 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 @media(prefers-reduced-motion:reduce){.fold-toggle svg{transition:none}}
 .fold-name{flex:1;min-width:0}
 .fold-name strong{display:block;font-size:14px;font-weight:650;color:var(--lime);text-transform:capitalize}
+.fold-name.plain strong{text-transform:none}
 .fold-name small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .fold-total{font-size:15px;font-weight:650;flex-shrink:0}
 .fold-body{border-top:1px solid var(--border);padding:2px 16px 6px}
@@ -391,6 +387,10 @@ const journeyMinutes=j=>j.minutes!=null?j.minutes:Math.max(0,(Date.now()-j.start
 const journeyKm=j=>j.endKm!=null?j.endKm-j.startKm:Math.max(0,state.km-j.startKm);
 const journeyRunning=j=>j.endKm==null;
 let homeRidesOpen=true,journeysOpen=null,journeyMonthsOpen=null;
+/* Os anos que dá para escolher: os que têm lançamento, mais o ano corrente —
+   que entra sozinho quando o ano vira, sem ninguém precisar cadastrar nada. */
+const yearsOf=datas=>[...new Set([...datas.map(d=>Number(String(d).slice(0,4))),new Date().getFullYear()])].sort((a,b)=>b-a);
+const yearSelect=(id,anos,atual)=>`<select id="${id}" aria-label="Escolher o ano">${anos.map(a=>`<option ${a===atual?'selected':''}>${a}</option>`).join('')}</select>`;
 const monthLabel=mes=>new Date(Number(mes.slice(0,4)),Number(mes.slice(5,7))-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace('.','')+'/'+mes.slice(0,4);
 const dayLabel=date=>date.slice(8,10)+'/'+date.slice(5,7);
 function toggleJourneyMonth(mes){
@@ -473,6 +473,7 @@ function financePage(){const t=totals(),fuel=t.expenses.filter(e=>e.category==='
    Tela própria, com um ano por vez e cada mês numa caixa que abre e fecha —
    assim uma lista longa não empurra o resto da tela de Gastos para baixo. */
 let historyYear=new Date().getFullYear(),historyOpen=null;
+let journeyYear=new Date().getFullYear(),maintenanceYear=new Date().getFullYear(),maintenanceMonthsOpen=null,maintenanceOpen=null;
 const monthName=(y,m)=>new Date(y,m,1).toLocaleDateString('pt-BR',{month:'long'});
 function toggleHistoryMonth(m){
  if(historyOpen===null)historyOpen=new Set();
@@ -482,7 +483,7 @@ function toggleHistoryMonth(m){
 function expenseHistoryPage(){
  /* O ano corrente entra sempre na lista, tenha lançamento ou não: assim que
     vira o ano, 2027 aparece sozinho, depois 2028, e por aí vai. */
- const anos=[...new Set([...state.expenses.map(e=>Number(e.date.slice(0,4))),new Date().getFullYear()])].sort((a,b)=>b-a);
+ const anos=yearsOf(state.expenses.map(e=>e.date));
  if(!anos.includes(historyYear))historyYear=anos[0];
  const doAno=state.expenses.filter(e=>Number(e.date.slice(0,4))===historyYear&&(expenseFilter==='Todas'||e.category===expenseFilter))
   .sort((a,b)=>b.date.localeCompare(a.date));
@@ -490,7 +491,7 @@ function expenseHistoryPage(){
  if(historyOpen===null)historyOpen=new Set(meses.length?[meses[0]]:[]);
  const total=doAno.reduce((a,e)=>a+e.amount,0);
  return title('Histórico de gastos','Escolha o ano e abra o mês que quiser conferir.')+
- `<div class="list-toolbar centered"><h2 class="accent">Lançamentos</h2><div class="toolbar-filters"><select id="history-year" aria-label="Escolher o ano">${anos.map(a=>`<option ${a===historyYear?'selected':''}>${a}</option>`).join('')}</select><select id="expense-filter" aria-label="Filtrar gastos por categoria">${['Todas',...categories].map(x=>`<option ${expenseFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div>
+ `<div class="list-toolbar centered"><h2 class="accent">Lançamentos</h2><div class="toolbar-filters">${yearSelect('history-year',anos,historyYear)}<select id="expense-filter" aria-label="Filtrar gastos por categoria">${['Todas',...categories].map(x=>`<option ${expenseFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div>
  <div class="history-total"><span>Total no ano${expenseFilter==='Todas'?'':' · '+esc(expenseFilter)}</span><strong class="mono negative">${money(total)}</strong></div>
  ${meses.length?meses.map(m=>{
   const itens=doAno.filter(e=>Number(e.date.slice(5,7))-1===m),soma=itens.reduce((a,e)=>a+e.amount,0),aberto=historyOpen.has(m);
@@ -504,11 +505,17 @@ function expenseHistoryPage(){
 /* ===== Jornadas =====
    Um dia de trabalho por caixa, com as corridas registradas nele. */
 function journeysPage(){
- const todas=[...(state.activeShift?[state.activeShift]:[]),...state.shifts].sort((a,b)=>b.date.localeCompare(a.date));
+ const tudo=[...(state.activeShift?[state.activeShift]:[]),...state.shifts].sort((a,b)=>b.date.localeCompare(a.date));
+ const anos=yearsOf(tudo.map(j=>j.date));
+ if(!anos.includes(journeyYear))journeyYear=anos[0];
+ const todas=tudo.filter(j=>Number(j.date.slice(0,4))===journeyYear);
  const meses=[...new Set(todas.map(j=>j.date.slice(0,7)))];
  if(journeyMonthsOpen===null)journeyMonthsOpen=new Set(meses.length?[meses[0]]:[]);
  if(journeysOpen===null)journeysOpen=new Set(todas.length?[todas[0].date]:[]);
- return title('Suas jornadas','Abra o mês e depois o dia para ver as corridas registradas nele.')+
+ const ganhoAno=todas.reduce((a,j)=>a+journeyRides(j).reduce((x,r)=>x+r.amount,0),0);
+ return title('Suas jornadas','Escolha o ano, abra o mês e depois o dia para ver as corridas.')+
+ `<div class="list-toolbar centered"><h2 class="accent">Jornadas</h2><div class="toolbar-filters">${yearSelect('journey-year',anos,journeyYear)}</div></div>
+ <div class="history-total"><span>Ganhos em ${journeyYear}</span><strong class="mono positive">${money(ganhoAno)}</strong></div>`+
  (meses.length?meses.map(mes=>{
   const doMes=todas.filter(j=>j.date.startsWith(mes));
   const ganhos=doMes.reduce((a,j)=>a+journeyRides(j).reduce((x,r)=>x+r.amount,0),0);
@@ -518,7 +525,7 @@ function journeysPage(){
    <span class="fold-name"><strong>${monthLabel(mes)}</strong><small>${doMes.length} ${doMes.length===1?'jornada':'jornadas'}</small></span>
    <span class="fold-total mono">${money(ganhos)}</span></button>
    ${aberto?`<div class="fold-body">${doMes.map(journeyBox).join('')}</div>`:''}</div>`;
- }).join(''):'<p class="empty">Nenhuma jornada registrada ainda. Comece a primeira no Início.</p>');
+ }).join(''):`<p class="empty">Nenhuma jornada registrada em ${journeyYear}.</p>`);
 }
 function journeyBox(j){
  const corridas=journeyRides(j),ganhos=corridas.reduce((a,r)=>a+r.amount,0),aberta=journeysOpen.has(j.date),andamento=journeyRunning(j);
@@ -868,7 +875,13 @@ function maintenanceNote(){
 /* Serviço avulso: o que foi feito, quanto custou e com quantos km. Diferente do
    painel, que acompanha os prazos dos itens de revisão. */
 function maintenanceLogPage(){
- const lista=[...(state.maintenance||[])].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id));
+ const tudo=[...(state.maintenance||[])].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id));
+ const anos=yearsOf(tudo.map(m=>m.date));
+ if(!anos.includes(maintenanceYear))maintenanceYear=anos[0];
+ const lista=tudo.filter(m=>Number(m.date.slice(0,4))===maintenanceYear);
+ const meses=[...new Set(lista.map(m=>m.date.slice(0,7)))];
+ if(maintenanceMonthsOpen===null)maintenanceMonthsOpen=new Set(meses.length?[meses[0]]:[]);
+ if(maintenanceOpen===null)maintenanceOpen=new Set(lista.length?[lista[0].id]:[]);
  const total=lista.reduce((a,m)=>a+m.amount,0);
  return title('Adicionar manutenção','Anote o que foi feito, quanto custou e com quantos km.')+
  `<form id="maintenance-form"><div class="form-grid">
@@ -881,13 +894,36 @@ function maintenanceLogPage(){
  <p class="form-error" id="form-error" role="alert"></p>
  <div class="form-actions"><button type="submit" class="btn primary">${icon('plus')}Salvar manutenção</button></div></form>
  <p class="small muted center-text" style="margin:14px 0 24px">O valor entra no Financeiro como gasto de Manutenção, junto com os lançamentos do dia a dia.</p>
- <div class="list-toolbar centered"><h2 class="accent">Manutenções registradas</h2></div>
- <div class="history-total"><span>Total em manutenção</span><strong class="mono negative">${money(total)}</strong></div>
- ${lista.length?lista.map(m=>`<article class="log-item"><div class="log-head"><strong>${esc(m.description)}</strong>
+ <div class="list-toolbar centered"><h2 class="accent">Manutenções registradas</h2><div class="toolbar-filters">${yearSelect('maintenance-year',anos,maintenanceYear)}</div></div>
+ <div class="history-total"><span>Total em ${maintenanceYear}</span><strong class="mono negative">${money(total)}</strong></div>
+ ${meses.length?meses.map(mes=>{
+  const doMes=lista.filter(m=>m.date.startsWith(mes)),soma=doMes.reduce((a,m)=>a+m.amount,0),aberto=maintenanceMonthsOpen.has(mes);
+  return `<div class="fold-box ${aberto?'open':''}"><button type="button" class="fold-head" data-maintenance-month="${esc(mes)}" aria-expanded="${aberto}">
+   <span class="fold-chevron">${icon('chevron')}</span>
+   <span class="fold-name"><strong>${monthLabel(mes)}</strong><small>${doMes.length} ${doMes.length===1?'manutenção':'manutenções'}</small></span>
+   <span class="fold-total mono">${money(soma)}</span></button>
+   ${aberto?`<div class="fold-body">${doMes.map(maintenanceBox).join('')}</div>`:''}</div>`;
+ }).join(''):`<p class="empty">Nenhuma manutenção registrada em ${maintenanceYear}.</p>`}`;
+}
+function maintenanceBox(m){
+ const aberta=maintenanceOpen.has(m.id);
+ return `<div class="fold-box ${aberta?'open':''}"><div class="fold-top"><button type="button" class="fold-head" data-maintenance="${esc(m.id)}" aria-expanded="${aberta}">
+  <span class="fold-chevron">${icon('chevron')}</span>
+  <span class="fold-name plain"><strong>${esc(m.description)}</strong><small>${number(m.km)} km · ${prettyDate(m.date)}</small></span>
+  <span class="fold-total mono">${money(m.amount)}</span></button>
   <button type="button" class="icon-btn fold-del" data-maintenance-remove="${esc(m.id)}" aria-label="Excluir a manutenção ${esc(m.description)}">${icon('trash')}</button></div>
-  <small>${number(m.km)} km · ${prettyDate(m.date)}</small>
-  <div class="log-foot">${m.shop?`<span>${esc(m.shop)}</span>`:''}<strong class="mono negative">${money(m.amount)}</strong></div></article>`).join('')
-  :'<p class="empty">Nenhuma manutenção registrada ainda.</p>'}`;
+  ${aberta?`<div class="fold-body"><div class="fold-row"><strong>Oficina</strong><span>${m.shop?esc(m.shop):'Não informada'}</span></div>
+   <div class="fold-row"><strong>Lançado nos gastos</strong><span class="mono">Manutenção · ${money(m.amount)}</span></div></div>`:''}</div>`;
+}
+function toggleMaintenanceMonth(mes){
+ if(maintenanceMonthsOpen===null)maintenanceMonthsOpen=new Set();
+ maintenanceMonthsOpen.has(mes)?maintenanceMonthsOpen.delete(mes):maintenanceMonthsOpen.add(mes);
+ render();
+}
+function toggleMaintenance(id){
+ if(maintenanceOpen===null)maintenanceOpen=new Set();
+ maintenanceOpen.has(id)?maintenanceOpen.delete(id):maintenanceOpen.add(id);
+ render();
 }
 let maintenanceToRemove=null;
 function askRemoveMaintenance(id){
@@ -1250,7 +1286,7 @@ ride:showRide,expense:showExpense,close:closeDialog,goal:()=>openDialog('Sua met
 removeVehicle:()=>openDialog('Remover o carro?',`<p class="dialog-intro">O cadastro do carro e a cotação salva da FIPE saem deste navegador. Corridas, gastos e jornadas continuam como estão.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn danger" data-action="confirmRemoveVehicle">Remover carro</button></div>`),
 confirmRemoveVehicle:()=>{state.vehicle=null;resetFipeState();save();closeDialog();render();toast('Carro removido. Você pode cadastrar de novo quando quiser.');},
 dismissNudge:()=>{state.vehicleNudge='off';save();render();},back:()=>{const sub=SUBVIEWS[view];go(sub?(sub.back||sub.parent):'inicio');},toggleHomeRides:()=>{homeRidesOpen=!homeRidesOpen;render();},removeReceipt:()=>{state.receipts=state.receipts.filter(r=>r.id!==receiptToRemove);if(receiptsOpen)receiptsOpen.delete(receiptToRemove);receiptToRemove=null;save();closeDialog();render();toast('Comprovante excluído.');},
-removeMaintenance:()=>{const id=maintenanceToRemove;if(!id)return;state.maintenance=(state.maintenance||[]).filter(m=>m.id!==id);state.expenses=state.expenses.filter(e=>e.maintenanceId!==id);historyOpen=null;maintenanceToRemove=null;save();closeDialog();render();toast('Manutenção excluída. O gasto saiu junto.');},
+removeMaintenance:()=>{const id=maintenanceToRemove;if(!id)return;state.maintenance=(state.maintenance||[]).filter(m=>m.id!==id);state.expenses=state.expenses.filter(e=>e.maintenanceId!==id);if(maintenanceOpen)maintenanceOpen.delete(id);maintenanceMonthsOpen=null;historyOpen=null;maintenanceToRemove=null;save();closeDialog();render();toast('Manutenção excluída. O gasto saiu junto.');},
 fipeAuto:fipeAuto,fipeList:fipeList,fipeRefresh:fipeRefresh,fipeConfirmYear:fipeConfirmYear,
 fipeManual:()=>{
  const v=state.vehicle;
@@ -1260,8 +1296,8 @@ fipeManual:()=>{
  openDialog('Anotar o valor da FIPE',form('fipe-manual-form','Consultou no site da FIPE? Anote aqui o valor que apareceu. Ele fica salvo apenas neste navegador.',field('Valor (R$)','value','number',atual,'required min="0.01" max="9999999" step="0.01" inputmode="decimal" placeholder="0,00"')+field('Ano do modelo','modelYear','number',v.year||'',`min="1950" max="${maxYear()}" step="1" inputmode="numeric"`)+`<p class="small muted" style="grid-column:1/-1">A consulta oficial fica em <a href="${FIPE_SITE}" target="_blank" rel="noopener noreferrer">veiculos.fipe.org.br</a>.</p>`,'Salvar valor'));
 },
 about:()=>openDialog('Bem-vindo ao LucroInDrive',`<span class="tag ok">Primeiro esboço</span><p class="body-text" style="margin-top:20px">Explore corridas, gastos, jornada, metas e manutenção com dados de exemplo. Os lançamentos alteram os resumos e ficam salvos apenas neste navegador.</p><ul><li>O login é demonstrativo; não há autenticação ou backup online.</li><li>A cotação da FIPE é consultada de verdade, em uma API pública, depois que você cadastra o carro.</li><li>Este app é independente do TMyCar.</li></ul><p class="body-text">Para começar novamente, use “Restaurar demonstração”.</p><button class="btn primary" style="width:100%;margin-top:15px" data-action="close">Explorar o app</button><button class="btn secondary" style="width:100%;margin-top:10px" data-action="logout">Voltar ao login</button>`),reset:()=>openDialog('Restaurar demonstração?',`<p class="dialog-intro">Os lançamentos feitos neste esboço serão removidos deste navegador. Os dados de exemplo serão recriados.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn primary" data-action="confirmReset">Restaurar</button></div>`),confirmReset:()=>{state=seed();period='today';rideFilter='Todas';expenseFilter='Todas';vehicleDraft=null;resetFipeState();save();closeDialog();render();toast('Demonstração restaurada.');}};
-document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.maintenanceRemove)askRemoveMaintenance(el.dataset.maintenanceRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
-document.addEventListener('change',e=>{if(e.target.id==='consent-confirm'){consentPending=e.target.checked;$('consent-enter').disabled=!consentPending;$('consent-status').textContent=consentPending?'Tudo pronto para continuar.':'Confirme sua idade e o aceite para continuar.';}if(e.target.id==='ride-filter'){rideFilter=e.target.value;render();}if(e.target.id==='history-year'){historyYear=Number(e.target.value);historyOpen=null;render();}if(e.target.id==='expense-filter'){expenseFilter=e.target.value;historyOpen=null;render();}if(vehicleDraft&&e.target.form&&e.target.form.id==='vehicle-form'&&['brand','model','versionIdx','fuel'].includes(e.target.name)){readVehicleDraft();syncVehicleDraft(e.target.name);repaintVehicleForm(e.target.name);}});
+document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.maintenanceMonth)toggleMaintenanceMonth(el.dataset.maintenanceMonth);if(el.dataset.maintenance)toggleMaintenance(el.dataset.maintenance);if(el.dataset.maintenanceRemove)askRemoveMaintenance(el.dataset.maintenanceRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
+document.addEventListener('change',e=>{if(e.target.id==='consent-confirm'){consentPending=e.target.checked;$('consent-enter').disabled=!consentPending;$('consent-status').textContent=consentPending?'Tudo pronto para continuar.':'Confirme sua idade e o aceite para continuar.';}if(e.target.id==='ride-filter'){rideFilter=e.target.value;render();}if(e.target.id==='history-year'){historyYear=Number(e.target.value);historyOpen=null;render();}if(e.target.id==='journey-year'){journeyYear=Number(e.target.value);journeyMonthsOpen=null;journeysOpen=null;render();}if(e.target.id==='maintenance-year'){maintenanceYear=Number(e.target.value);maintenanceMonthsOpen=null;maintenanceOpen=null;render();}if(e.target.id==='expense-filter'){expenseFilter=e.target.value;historyOpen=null;render();}if(vehicleDraft&&e.target.form&&e.target.form.id==='vehicle-form'&&['brand','model','versionIdx','fuel'].includes(e.target.name)){readVehicleDraft();syncVehicleDraft(e.target.name);repaintVehicleForm(e.target.name);}});
 document.addEventListener('input',e=>{if(e.target.id==='fipe-search'){fipeState.filter=e.target.value;if($('fipe-options'))$('fipe-options').innerHTML=fipeOptions();}if(receiptDraft&&e.target.form&&e.target.form.id==='receipt-form'){readReceiptDraft();if($('receipt-preview'))$('receipt-preview').textContent=receiptText(receiptDraft);}});
 document.addEventListener('submit',e=>{
  e.preventDefault();const formEl=e.target;if(!formEl.checkValidity()){formEl.reportValidity();return;}const d=Object.fromEntries(new FormData(formEl)),fail=m=>{$('form-error').textContent=m;};let message='';
@@ -1291,6 +1327,7 @@ document.addEventListener('submit',e=>{
   /* mesma regra dos gastos do dia a dia: entra no Financeiro pela data */
   state.expenses.push({id:uid(),category:'Manutenção',description:desc+(oficina?' · '+oficina:''),date:d.date,amount:valor,maintenanceId:registro.id});
   state.km=Math.max(state.km,km);
+  maintenanceYear=Number(d.date.slice(0,4));maintenanceMonthsOpen=null;maintenanceOpen=null;historyOpen=null;
   message='Manutenção registrada e lançada nos gastos.';
   break;
  }

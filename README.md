@@ -47,10 +47,10 @@ carimbo em cada corrida.
 
 No Início, "Últimas corridas" mostra as corridas da jornada aberta e se recolhe
 pela seta ao lado do título. Ao encerrar a jornada a lista zera, e o dia fica
-guardado em **Jornadas**, o botão da tela de Corridas. Lá a lista é em dois
-níveis: o mês ("out/2026", com quantas jornadas e o total) abre e, dentro dele,
-cada dia ("Jornada 01/10", com as corridas, o tempo, a distância e o total)
-abre por sua vez.
+guardado em **Jornadas**, o botão da tela de Corridas. Lá, um seletor escolhe o
+ano e mostra os ganhos dele; abaixo a lista é em dois níveis: o mês ("out/2026",
+com quantas jornadas e o total) abre e, dentro dele, cada dia ("Jornada 01/10",
+com as corridas, o tempo, a distância e o total) abre por sua vez.
 
 Enquanto a jornada está aberta, a distância do dia é o odômetro menos a
 quilometragem de saída; ao encerrar, vale a leitura final.
@@ -89,9 +89,12 @@ carro — que mostra, ao lado do nome, quantos itens estão vencidos ou próximo
 **Adicionar manutenção** é o botão ao lado dele, para o serviço que não está na
 lista de revisões: pastilha de freio, amortecedor, embreagem, o que for. Em cada
 lançamento vão o que foi feito, o valor, a quilometragem, a data e, se quiser, a
-oficina — assim dá para saber depois com quantos km a pastilha foi trocada. A
-lista de manutenções registradas fica na mesma tela, com o total gasto e uma
-lixeira em cada uma.
+oficina — assim dá para saber depois com quantos km a pastilha foi trocada.
+
+A lista fica na mesma tela, organizada como as jornadas: um seletor de ano, o
+total do ano e uma caixa por mês (`out/2026`) que abre e mostra as manutenções
+daquele mês. Cada manutenção é outra caixa, com a descrição, o km e a data à
+vista, uma lixeira ao lado e, ao abrir, a oficina e o gasto que ela gerou.
 
 Todo lançamento de manutenção entra nos gastos do Financeiro na categoria
 **Manutenção**, pela data informada, exatamente como um gasto do dia a dia:

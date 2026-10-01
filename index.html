@@ -213,7 +213,8 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .page-link{width:100%;justify-content:space-between;margin-bottom:10px}
 .page-link-note{margin-left:auto;font-size:12px;font-weight:500;color:var(--muted)}
 .page-link svg:last-child{margin-left:auto}
-.toolbar-filters{display:flex;gap:10px;align-items:center;min-width:0}
+.list-toolbar.centered{flex-direction:column;align-items:center;justify-content:center;gap:13px}
+.toolbar-filters{display:flex;gap:10px;align-items:center;min-width:0;justify-content:center;flex-wrap:wrap}
 .toolbar-filters select{min-width:0}
 #history-year{padding-right:32px}
 .history-total{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;margin-bottom:18px;border:1px solid var(--border);border-radius:14px;background:var(--surface);font-size:13px;color:var(--muted)}
@@ -478,7 +479,7 @@ function expenseHistoryPage(){
  if(historyOpen===null)historyOpen=new Set(meses.length?[meses[0]]:[]);
  const total=doAno.reduce((a,e)=>a+e.amount,0);
  return title('Histórico de gastos','Escolha o ano e abra o mês que quiser conferir.')+
- `<div class="list-toolbar"><h2 class="accent">Lançamentos</h2><div class="toolbar-filters"><select id="history-year" aria-label="Escolher o ano">${anos.map(a=>`<option ${a===historyYear?'selected':''}>${a}</option>`).join('')}</select><select id="expense-filter" aria-label="Filtrar gastos por categoria">${['Todas',...categories].map(x=>`<option ${expenseFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div>
+ `<div class="list-toolbar centered"><h2 class="accent">Lançamentos</h2><div class="toolbar-filters"><select id="history-year" aria-label="Escolher o ano">${anos.map(a=>`<option ${a===historyYear?'selected':''}>${a}</option>`).join('')}</select><select id="expense-filter" aria-label="Filtrar gastos por categoria">${['Todas',...categories].map(x=>`<option ${expenseFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div>
  <div class="history-total"><span>Total no ano${expenseFilter==='Todas'?'':' · '+esc(expenseFilter)}</span><strong class="mono negative">${money(total)}</strong></div>
  ${meses.length?meses.map(m=>{
   const itens=doAno.filter(e=>Number(e.date.slice(5,7))-1===m),soma=itens.reduce((a,e)=>a+e.amount,0),aberto=historyOpen.has(m);

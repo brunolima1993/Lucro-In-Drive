@@ -19,7 +19,8 @@ O módulo antes chamado Gastos, hoje o guarda-chuva do que é financeiro. Na
 tela: resumo por período (gastos registrados, combustível e recarga, gasto por
 km), lançamento de despesas e dois botões que levam a telas próprias —
 
-- **Histórico de gastos**: dois seletores lado a lado, ano e categoria, e cada
+- **Histórico de gastos**: o título "Lançamentos" centralizado e, logo abaixo,
+  os dois seletores centralizados lado a lado — ano e categoria — e cada
   mês numa caixa que abre e fecha, com o total do mês e do ano. O ano corrente
   está sempre na lista, tenha lançamento ou não, então ele aparece sozinho
   quando o ano vira;

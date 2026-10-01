@@ -25,7 +25,9 @@ km), lançamento de despesas e dois botões que levam a telas próprias —
   plataforma e onde você gastou.
 
 As duas ficam fora da barra de baixo: a aba Financeiro segue marcada enquanto
-elas estão abertas, e um botão volta para a tela-mãe.
+elas estão abertas, e a seta no alto à esquerda volta para a tela-mãe. Essa
+seta é a mesma em todo o app — aparece só nas sub-telas, e o nome LucroInDrive
+fica centralizado no topo para ela não encostar nele.
 
 ## Início
 

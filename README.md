@@ -13,6 +13,12 @@ npx http-server . -p 8080   # depois abra http://localhost:8080
 Os lançamentos ficam no `localStorage` do navegador. Não há backend, conta real
 nem backup online.
 
+As telas são feitas para caber no celular: as caixas trabalham com espaçamento
+curto e entrelinha controlada nos números grandes, que de outro modo herdam
+quase meia linha de ar cada um. Mexer em espaçamento aqui é mexer em uma lista
+de regras que se sobrescrevem — vale conferir qual é a última que vale para o
+seletor antes de mudar um valor.
+
 ## Ícone
 
 O volante com o gráfico em alta é o ícone do app, não um enfeite das telas: o
@@ -99,6 +105,10 @@ ele. Ele existe por três motivos:
 - consultar o valor de referência na **Tabela FIPE**;
 - montar o **painel de manutenção** conforme o motor;
 - manter quilometragem e prazos de revisão no lugar.
+
+A caixa do veículo traz o cadastro e a quilometragem, com o lápis e a lixeira
+no alto à direita — editar e remover ficam na própria caixa, não em botões
+soltos acima dela. Enquanto não há carro, o topo mostra **Cadastrar carro**.
 
 O **Painel de manutenção** fica numa tela própria, aberta pelo botão em Meu
 carro — que mostra, ao lado do nome, quantos itens estão vencidos ou próximos.

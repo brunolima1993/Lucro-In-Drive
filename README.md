@@ -161,7 +161,8 @@ REFERÊNCIA" e o valor continuam à vista. O que recolhe são os detalhes — mo
 ano, código, o aviso sobre a média de mercado e os botões.
 
 A caixa do veículo traz o cadastro e a quilometragem, com o lápis e a lixeira
-no alto à direita — editar e remover ficam na própria caixa, não em botões
+em verde no alto à direita — a lixeira vira coral só no toque, para avisar que
+é ela que apaga — editar e remover ficam na própria caixa, não em botões
 soltos acima dela. Enquanto não há carro, o topo mostra **Cadastrar carro**.
 
 **Atualizar km aceita número menor que o atual.** Ler o computador de bordo

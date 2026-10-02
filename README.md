@@ -22,8 +22,9 @@ seletor antes de mudar um valor.
 ## Ícone
 
 O volante com o gráfico em alta é o ícone do app, não um enfeite das telas: o
-topo de cada módulo mostra só o nome LucroInDrive. Ele aparece no login, na aba
-do navegador e, principalmente, como o atalho na tela do celular.
+topo de cada módulo e a tela de login mostram só o nome LucroInDrive. Ele
+aparece na aba do navegador e, principalmente, como o atalho na tela do
+celular — que é o lugar de um ícone de app.
 
 Para "Adicionar à tela de início" funcionar, a página traz o manifesto (nome,
 abertura em tela cheia, cor da barra de status) e as marcações do iPhone. O
@@ -42,8 +43,8 @@ O módulo antes chamado Gastos, hoje o guarda-chuva do que é financeiro. Na
 tela: resumo por período (gastos registrados, combustível e recarga, gasto por
 km), lançamento de despesas e dois botões que levam a telas próprias —
 
-- **Histórico de gastos**: o título "Lançamentos" centralizado e, logo abaixo,
-  os dois seletores centralizados lado a lado — ano e categoria — e cada
+- **Histórico de gastos**: uma barra em três partes — "Lançamentos" à
+  esquerda, o ano no meio e a categoria à direita — e cada
   mês numa caixa que abre e fecha, com o total do mês e do ano. Cada lançamento
   mostra a descrição, a data entre ela e o valor — em fonte menor, a mesma do
   histórico de corridas — e o valor. O ano corrente está sempre na lista, tenha
@@ -70,8 +71,16 @@ data é o que liga a corrida à jornada dela, então não há lançamento órfã
 carimbo em cada corrida.
 
 O **Histórico de corridas** é um botão da tela de Corridas, no mesmo molde do
-histórico de gastos: seletor de ano e de plataforma, total do ano e uma caixa
-por mês que abre e fecha. Cada corrida mostra a plataforma, a data entre ela e o valor — em
+histórico de gastos: a barra de três partes ("Corridas", o ano e a plataforma),
+total do ano e uma caixa por mês que abre e fecha. O ano tem largura fixa,
+porque é sempre quatro dígitos, e o filtro da direita fica com a sobra — é ele
+que precisa caber inteiro, com nomes como "Recarga elétrica". Em telas
+estreitas o nome e o ano cedem alguns pixels para isso.
+
+Os `<select>` do app desenham a própria seta (`appearance:none`). A seta nativa
+é pintada por cima do texto, com um tamanho que cada navegador escolhe, e isso
+tornava impossível calcular quanto texto cabe — além de deixar o campo
+diferente em cada navegador. Cada corrida mostra a plataforma, a data entre ela e o valor — em
 fonte menor, para caber — e, ao lado do valor, um botão de comprovante — ele abre a tela de gerar comprovante já com o valor e a data
 daquela corrida preenchidos; o trajeto fica para o motorista, que é a parte que
 só ele sabe. A tela de Corridas em si ficou com o resumo do período e os três

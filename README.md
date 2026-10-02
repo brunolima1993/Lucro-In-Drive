@@ -23,6 +23,24 @@ Os seis atalhos que levam a outra tela — histórico de corridas, gerar
 comprovante, histórico de gastos, relatórios, painel de manutenção e adicionar
 manutenção — são verdes por inteiro: ícone, nome e seta.
 
+## Configurações
+
+A engrenagem fica no alto à direita, ao lado do (i), e abre uma tela própria —
+fora da barra de baixo, então nenhuma aba fica marcada enquanto ela está aberta.
+Tem três partes:
+
+- **Escolha seu plano**: Grátis, Mensal (R$ 14,99) e Anual (R$ 99,99), com o
+  atual marcado. A prévia **não cobra nada**: a escolha fica no `localStorage`,
+  e a tela diz isso. O que o plano pago inclui ainda não está escrito — entra
+  aqui quando for definido;
+- **Conta e dados**: o e-mail com que a pessoa entrou (ou "Conta de
+  demonstração", para quem usou o acesso direto), sair da conta e excluir a
+  conta. A exclusão pede confirmação e, nesta prévia, apaga o que está no
+  navegador — lançamentos e aceite dos termos —, o que o aviso diz, já que
+  ainda não há nuvem;
+- **Falar com o suporte**: o endereço fica na constante `SUPORTE_EMAIL`, uma
+  linha só para trocar quando o e-mail de verdade existir.
+
 ## Ícone
 
 O volante com o gráfico em alta é o ícone do app, não um enfeite das telas: o

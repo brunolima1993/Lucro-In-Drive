@@ -19,6 +19,10 @@ quase meia linha de ar cada um. Mexer em espaçamento aqui é mexer em uma lista
 de regras que se sobrescrevem — vale conferir qual é a última que vale para o
 seletor antes de mudar um valor.
 
+Os seis atalhos que levam a outra tela — histórico de corridas, gerar
+comprovante, histórico de gastos, relatórios, painel de manutenção e adicionar
+manutenção — são verdes por inteiro: ícone, nome e seta.
+
 ## Ícone
 
 O volante com o gráfico em alta é o ícone do app, não um enfeite das telas: o
@@ -150,6 +154,11 @@ marca vem do próprio `required` do campo, então não dá para o rótulo dizer 
 coisa e a validação outra; o asterisco é decorativo (`aria-hidden`), porque
 quem usa leitor de tela já ouve a obrigatoriedade pelo campo. No cadastro do
 carro, isso é marca e modelo — o resto é opcional.
+
+A caixa da **Tabela FIPE** abre e fecha pela seta no alto à direita, e fechada
+ela não esconde a cotação: o título, o selo de situação, o rótulo "VALOR DE
+REFERÊNCIA" e o valor continuam à vista. O que recolhe são os detalhes — modelo,
+ano, código, o aviso sobre a média de mercado e os botões.
 
 A caixa do veículo traz o cadastro e a quilometragem, com o lápis e a lixeira
 no alto à direita — editar e remover ficam na própria caixa, não em botões

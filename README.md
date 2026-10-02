@@ -31,9 +31,11 @@ Ela é um índice de três botões, cada um levando à sua tela, no mesmo molde 
 atalhos dos outros módulos:
 
 - **Escolha seu plano**: Grátis, Mensal (R$ 14,99) e Anual (R$ 99,99), com o
-  atual marcado e também escrito ao lado do botão, no índice. Cada cartão lista
-  o que inclui. A prévia **não cobra nada**: não há pagamento ligado e a escolha
-  fica no `localStorage`, o que a tela diz;
+  atual marcado e também escrito ao lado do botão, no índice. O cartão traz o
+  nome e o valor centralizados, sem linha de período — "por mês" e "por ano" já
+  estão ditos no nome do plano —, e a lista do que inclui segue alinhada à
+  esquerda, que é como se lê uma lista. A prévia **não cobra nada**: não há
+  pagamento ligado e a escolha fica no `localStorage`, o que a tela diz;
 - **Conta e dados**: o e-mail com que a pessoa entrou (ou "Conta de
   demonstração", para quem usou o acesso direto), sair da conta e excluir a
   conta. A exclusão pede confirmação e, nesta prévia, apaga o que está no
@@ -92,6 +94,19 @@ As duas ficam fora da barra de baixo: a aba Financeiro segue marcada enquanto
 elas estão abertas, e a seta no alto à esquerda volta para a tela-mãe. Essa
 seta é a mesma em todo o app — aparece só nas sub-telas, e o nome LucroInDrive
 fica centralizado no topo para ela não encostar nele.
+
+### Voltar
+
+O botão "<" do aparelho volta uma tela, como em qualquer app de Android, e a
+seta de dentro do app faz a mesma coisa sem empilhar entrada nova no histórico.
+Isso precisou de um detalhe: a seta chamava `go()`, que **empurra** uma entrada,
+então depois de usá-la o botão do aparelho reavançava para a tela que a pessoa
+tinha acabado de deixar. Agora cada entrada do histórico é numerada com
+`history.replaceState({passo})` e o app guarda qual tela é cada número; quando a
+tela anterior já é o destino da seta, ela chama `history.back()` e o aparelho
+continua subindo. Quem chega numa sub-tela por um atalho de outro lugar — o
+aviso do plano pago levando direto a Escolha seu plano, por exemplo — continua
+voltando para a tela-mãe certa, aí sim com uma entrada nova.
 
 ## Início
 

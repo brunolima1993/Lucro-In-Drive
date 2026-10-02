@@ -242,7 +242,10 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .config-head{font-size:16px;margin:22px 0 11px}
 .config-head:first-of-type{margin-top:0}
 .plan-list{display:grid;gap:9px}
-.plan-card{display:grid;gap:3px;padding:14px 16px;text-align:left;width:100%;border:1px solid var(--border);background:var(--surface);cursor:pointer}
+/* nome e valor no meio do cartão; a lista do que inclui segue à esquerda,
+   que é como se lê uma lista */
+.plan-card{display:grid;gap:3px;padding:14px 16px;justify-items:center;text-align:center;width:100%;border:1px solid var(--border);background:var(--surface);cursor:pointer}
+.plan-card>.plan-itens{justify-self:stretch;text-align:left}
 .plan-card.atual{border-color:var(--lime)}
 .plan-top{display:flex;align-items:center;gap:9px}
 .plan-top strong{font-size:15px;font-weight:650}
@@ -813,9 +816,9 @@ function escolherPlano(id){
 const SUPORTE_EMAIL='emaildolucroindrive@gmail.com';
 const PREMIUM=['Gerar comprovante, e o botão de comprovante no histórico de corridas','Consulta à Tabela FIPE','Sem anúncios'];
 const PLANOS=[
- ['gratis','Grátis','R$ 0','para sempre','',['Corridas, gastos e jornadas','Painel de manutenção e manutenções avulsas','Histórico e relatórios']],
- ['mensal','Mensal','R$ 14,99','por mês','',['Tudo o que o Grátis tem',...PREMIUM]],
- ['anual','Anual','R$ 99,99','por ano','Economize R$ 79,89 em relação a doze meses do plano mensal.',['Tudo o que o Grátis tem',...PREMIUM]]
+ ['gratis','Grátis','R$ 0','',['Corridas, gastos e jornadas','Painel de manutenção e manutenções avulsas','Histórico e relatórios']],
+ ['mensal','Mensal','R$ 14,99','',['Tudo o que o Grátis tem',...PREMIUM]],
+ ['anual','Anual','R$ 99,99','Economize R$ 79,89 em relação a doze meses do plano mensal.',['Tudo o que o Grátis tem',...PREMIUM]]
 ];
 /* O premium libera o comprovante e a FIPE. Quem está no Grátis continua vendo
    os dois caminhos — escondê-los faria o recurso sumir sem explicação —, só que
@@ -831,12 +834,11 @@ function settingsPage(){
 }
 function planPage(){
  return title('Escolha seu plano','O plano marcado é o que está em uso.')+
- `<div class="plan-list">${PLANOS.map(([id,nome,preco,periodo,extra,itens])=>{
+ `<div class="plan-list">${PLANOS.map(([id,nome,preco,extra,itens])=>{
   const atual=state.plan===id;
   return `<button type="button" class="panel plan-card ${atual?'atual':''}" data-plan="${id}" aria-pressed="${atual}">
    <span class="plan-top"><strong>${nome}</strong>${atual?'<span class="tag ok">Seu plano</span>':''}</span>
    <span class="plan-price mono">${preco}</span>
-   <small>${periodo}</small>
    ${extra?`<small class="plan-extra">${extra}</small>`:''}
    <span class="plan-itens">${itens.map(x=>`<span>${icon('check')}${esc(x)}</span>`).join('')}</span></button>`;
  }).join('')}</div>
@@ -1091,8 +1093,20 @@ $('app-shell').classList.toggle('terms-mode',needsConsent);
 if(!demoSignedIn){if(location.hash!=='#login')history.replaceState(null,'','#login');$('view').innerHTML=loginScreen();document.title='LucroInDrive — Login';return;}
 if(needsConsent){if(location.hash!=='#termos')history.replaceState(null,'','#termos');$('view').innerHTML=termsScreen();document.title='LucroInDrive — Antes de começar';return;}
 if(location.hash==='#termos'||location.hash==='#login')history.replaceState(null,'','#inicio');
-const route=location.hash.slice(1);view=navigation.some(n=>n[0]===route)||SUBVIEWS[route]?route:'inicio';const sub=SUBVIEWS[view],navView=sub?sub.parent:view,pageName=sub?sub.label:navigation.find(n=>n[0]===view)[1];$('desktop-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}${l}</button>`).join('');$('mobile-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}<span>${l}</span></button>`).join('');$('breadcrumb-name').textContent=pageName;$('topbar-back').hidden=!sub;$('side-car-name').textContent=state.vehicle?[vehicleName(state.vehicle),state.vehicle.year].filter(Boolean).join(' · '):'Nenhum carro cadastrado';$('side-km').textContent=number(state.km)+' km registrados';$('header-date').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});$('view').innerHTML=({inicio:home,corridas:ridesPage,financeiro:financePage,carro:carPage,config:settingsPage,'config-plano':planPage,'config-conta':accountPage,'config-suporte':supportPage,'corridas-jornadas':journeysPage,'corridas-historico':rideHistoryPage,'carro-manutencao':maintenancePage,'carro-manutencoes':maintenanceLogPage,'corridas-comprovante':receiptPage,'corridas-comprovantes':receiptsPage,'financeiro-historico':expenseHistoryPage,'financeiro-relatorios':reportsPage})[view]();document.title='LucroInDrive — '+pageName;updateStorageNote();}
+anotarTrilha();const route=location.hash.slice(1);view=navigation.some(n=>n[0]===route)||SUBVIEWS[route]?route:'inicio';const sub=SUBVIEWS[view],navView=sub?sub.parent:view,pageName=sub?sub.label:navigation.find(n=>n[0]===view)[1];$('desktop-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}${l}</button>`).join('');$('mobile-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}<span>${l}</span></button>`).join('');$('breadcrumb-name').textContent=pageName;$('topbar-back').hidden=!sub;$('side-car-name').textContent=state.vehicle?[vehicleName(state.vehicle),state.vehicle.year].filter(Boolean).join(' · '):'Nenhum carro cadastrado';$('side-km').textContent=number(state.km)+' km registrados';$('header-date').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});$('view').innerHTML=({inicio:home,corridas:ridesPage,financeiro:financePage,carro:carPage,config:settingsPage,'config-plano':planPage,'config-conta':accountPage,'config-suporte':supportPage,'corridas-jornadas':journeysPage,'corridas-historico':rideHistoryPage,'carro-manutencao':maintenancePage,'carro-manutencoes':maintenanceLogPage,'corridas-comprovante':receiptPage,'corridas-comprovantes':receiptsPage,'financeiro-historico':expenseHistoryPage,'financeiro-relatorios':reportsPage})[view]();document.title='LucroInDrive — '+pageName;updateStorageNote();}
 function go(v){if(location.hash==='#'+v){render();return;}location.hash=v;}
+/* Onde a pessoa esteve, na ordem. Cada entrada do histórico recebe um número e
+   a trilha diz qual tela é cada número. Com isso a seta do app volta de
+   verdade quando a tela anterior já é o destino; antes ela empilhava outra
+   entrada, e aí o botão do aparelho reavançava para a tela recém-deixada. */
+let trilha=[],passo=-1;
+function anotarTrilha(){
+ const st=history.state;
+ if(st&&typeof st.passo==='number')passo=st.passo;
+ else{passo+=1;trilha.length=passo;try{history.replaceState({passo},'');}catch{}}
+ trilha[passo]=location.hash.slice(1);
+}
+const telaAnterior=()=>passo>0?trilha[passo-1]:null;
 window.addEventListener('hashchange',()=>{render();$('main').scrollTo({top:0,behavior:'instant'});});
 function toast(msg){clearTimeout(toastTimer);$('toast').textContent=msg;$('toast').classList.remove('hidden');toastTimer=setTimeout(()=>$('toast').classList.add('hidden'),4200);}
 let returnFocus=null;
@@ -1704,7 +1718,7 @@ dismissNudge:()=>{state.vehicleNudge='off';save();render();},
 premiumAviso:()=>openDialog('Recurso do plano pago',`<p class="dialog-intro">O comprovante de corrida e a consulta à Tabela FIPE fazem parte dos planos Mensal e Anual. O plano pago também tira os anúncios.</p><div class="form-actions"><button class="btn secondary" data-action="close">Agora não</button><button class="btn primary" data-action="verPlanos">Ver os planos</button></div>`),
 verPlanos:()=>{closeDialog();go('config-plano');},
 askDeleteAccount:()=>openDialog('Excluir a conta?',`<p class="dialog-intro">A conta, os veículos e todo o histórico salvo na nuvem serão excluídos definitivamente. Não será possível recuperar depois.</p><div class="msgbox warn">Nesta prévia ainda não há nuvem: o que sai é tudo o que está guardado neste navegador.</div><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn danger" data-action="deleteAccount">Excluir a conta</button></div>`),
-deleteAccount:()=>{try{localStorage.removeItem(KEY);localStorage.removeItem(CONSENT_KEY);}catch{}state=seed();consentRecord=null;state.account=null;save();closeDialog();demoSignedIn=false;consentPending=false;render();$('main').scrollTo({top:0});toast('Conta excluída. Os dados deste navegador foram apagados.');},toggleFipe:()=>{fipeOpen=!fipeOpen;render();},back:()=>{const sub=SUBVIEWS[view];go(sub?(sub.back||sub.parent):'inicio');},removeReceipt:()=>{state.receipts=state.receipts.filter(r=>r.id!==receiptToRemove);if(receiptsOpen)receiptsOpen.delete(receiptToRemove);receiptToRemove=null;save();closeDialog();render();toast('Comprovante excluído.');},
+deleteAccount:()=>{try{localStorage.removeItem(KEY);localStorage.removeItem(CONSENT_KEY);}catch{}state=seed();consentRecord=null;state.account=null;save();closeDialog();demoSignedIn=false;consentPending=false;render();$('main').scrollTo({top:0});toast('Conta excluída. Os dados deste navegador foram apagados.');},toggleFipe:()=>{fipeOpen=!fipeOpen;render();},back:()=>{const sub=SUBVIEWS[view];const destino=sub?(sub.back||sub.parent||'inicio'):'inicio';if(telaAnterior()===destino)return void history.back();go(destino);},removeReceipt:()=>{state.receipts=state.receipts.filter(r=>r.id!==receiptToRemove);if(receiptsOpen)receiptsOpen.delete(receiptToRemove);receiptToRemove=null;save();closeDialog();render();toast('Comprovante excluído.');},
 removeMaintenance:()=>{const id=maintenanceToRemove;if(!id)return;state.maintenance=(state.maintenance||[]).filter(m=>m.id!==id);state.expenses=state.expenses.filter(e=>e.maintenanceId!==id);if(maintenanceOpen)maintenanceOpen.delete(id);maintenanceMonthsOpen=null;historyOpen=null;maintenanceToRemove=null;save();closeDialog();render();toast('Manutenção excluída. O gasto saiu junto.');},
 fipeAuto:fipeAuto,fipeList:fipeList,fipeRefresh:fipeRefresh,fipeConfirmYear:fipeConfirmYear,
 fipeManual:()=>{

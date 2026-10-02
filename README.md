@@ -145,9 +145,10 @@ no endereço `#corridas-jornadas`, mas **não tem mais botão** que leve a ela: 
 atalho saiu da tela de Corridas.
 
 Enquanto a jornada está aberta, a distância do dia é o odômetro menos a
-quilometragem de saída; ao encerrar, vale a leitura final.
+quilometragem de saída; depois de encerrar, vale a leitura final que o
+motorista deu.
 
-### Pausar e continuar
+### Pausar, encerrar e continuar
 
 Em "Sua Jornada", no Início, a jornada vai de **iniciar** a **pausar** e
 **continuar**, quantas vezes o motorista quiser — almoço, espera, uma volta em
@@ -155,11 +156,21 @@ casa. Em pausa o relógio simplesmente não anda: a jornada guarda os minutos j�
 contados e só volta a somar quando ela continua, então pausar e voltar dez
 vezes não infla nem zera o tempo.
 
-Ninguém precisa lembrar de encerrar. **Ao virar o dia a jornada se fecha
-sozinha**, com o tempo contado até a meia-noite daquele dia — nada de uma
-jornada esquecida varar a madrugada e marcar 30 horas — e com a quilometragem
-conhecida. Ela aparece em Jornadas marcada como *Encerrada na virada do dia*, e
-o dia novo já pode começar a sua.
+**Encerrar também não é o fim do dia.** Quem encerrou e voltou a rodar aperta
+*Continuar jornada*: a leitura final deixa de valer, o relógio segue de onde
+parou e a saída continua sendo a mesma, então o dia fecha com o tempo somado e
+a distância da saída até a última leitura — sem jornada duplicada e sem
+quilômetro contado duas vezes. Dá para repetir o ciclo à vontade. Enquanto está
+assim, a jornada aparece em Jornadas marcada como *Encerrada hoje* e o botão de
+iniciar some: há uma jornada por dia, e ela ainda é esta.
+
+Ninguém precisa lembrar de encerrar. **A virada do dia é o único fecho
+definitivo.** Se a jornada ainda estava correndo, ela se fecha sozinha com o
+tempo contado até a meia-noite daquele dia — nada de uma jornada esquecida
+varar a madrugada e marcar 30 horas — e com a quilometragem conhecida, marcada
+em Jornadas como *Encerrada na virada do dia*. Se a pessoa já tinha encerrado,
+ela só é guardada como está, sem marca nenhuma e sem aviso: ninguém precisa ser
+avisado do que já fez. Nos dois casos, o dia novo começa com a jornada dele.
 
 O fechamento acontece ao abrir o app e a cada minuto com ele aberto. Como é uma
 página sem servidor, não há nada rodando com o app fechado: quem fecha a

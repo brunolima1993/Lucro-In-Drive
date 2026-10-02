@@ -27,10 +27,11 @@ manutenção — são verdes por inteiro: ícone, nome e seta.
 
 A engrenagem fica no alto à direita, ao lado do (i), e abre uma tela própria —
 fora da barra de baixo, então nenhuma aba fica marcada enquanto ela está aberta.
-Tem três partes:
+Ela é um índice de três botões, cada um levando à sua tela, no mesmo molde dos
+atalhos dos outros módulos:
 
 - **Escolha seu plano**: Grátis, Mensal (R$ 14,99) e Anual (R$ 99,99), com o
-  atual marcado. A prévia **não cobra nada**: a escolha fica no `localStorage`,
+  atual marcado e também escrito ao lado do botão, no índice. A prévia **não cobra nada**: a escolha fica no `localStorage`,
   e a tela diz isso. O que o plano pago inclui ainda não está escrito — entra
   aqui quando for definido;
 - **Conta e dados**: o e-mail com que a pessoa entrou (ou "Conta de

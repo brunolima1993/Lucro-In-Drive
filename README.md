@@ -78,6 +78,24 @@ com as corridas, o tempo, a distância e o total) abre por sua vez.
 Enquanto a jornada está aberta, a distância do dia é o odômetro menos a
 quilometragem de saída; ao encerrar, vale a leitura final.
 
+### Pausar e continuar
+
+Em "Sua jornada", no Início, a jornada vai de **iniciar** a **pausar** e
+**continuar**, quantas vezes o motorista quiser — almoço, espera, uma volta em
+casa. Em pausa o relógio simplesmente não anda: a jornada guarda os minutos já
+contados e só volta a somar quando ela continua, então pausar e voltar dez
+vezes não infla nem zera o tempo.
+
+Ninguém precisa lembrar de encerrar. **Ao virar o dia a jornada se fecha
+sozinha**, com o tempo contado até a meia-noite daquele dia — nada de uma
+jornada esquecida varar a madrugada e marcar 30 horas — e com a quilometragem
+conhecida. Ela aparece em Jornadas marcada como *Encerrada na virada do dia*, e
+o dia novo já pode começar a sua.
+
+O fechamento acontece ao abrir o app e a cada minuto com ele aberto. Como é uma
+página sem servidor, não há nada rodando com o app fechado: quem fecha a
+jornada esquecida é a primeira abertura do dia seguinte.
+
 ### Comprovante de corrida
 
 Em Corridas, **Gerar comprovante** abre uma tela com o texto já pronto e os

@@ -70,18 +70,18 @@ carimbo em cada corrida.
 
 O **Histórico de corridas** é um botão da tela de Corridas, no mesmo molde do
 histórico de gastos: seletor de ano e de plataforma, total do ano e uma caixa
-por mês que abre e fecha. Em cada corrida, ao lado do valor, há um botão de
-comprovante — ele abre a tela de gerar comprovante já com o valor e a data
+por mês que abre e fecha. Cada corrida mostra a plataforma, a data entre ela e o valor — em
+fonte menor, para caber — e, ao lado do valor, um botão de comprovante — ele abre a tela de gerar comprovante já com o valor e a data
 daquela corrida preenchidos; o trajeto fica para o motorista, que é a parte que
 só ele sabe. A tela de Corridas em si ficou com o resumo do período e os três
 atalhos: histórico, Jornadas e gerar comprovante.
 
-No Início, "Últimas corridas" mostra as corridas da jornada aberta e se recolhe
-pela seta ao lado do título. Ao encerrar a jornada a lista zera, e o dia fica
-guardado em **Jornadas**, o botão da tela de Corridas. Lá, um seletor escolhe o
-ano e mostra os ganhos dele; abaixo a lista é em dois níveis: o mês ("out/2026",
-com quantas jornadas e o total) abre e, dentro dele, cada dia ("Jornada 01/10",
-com as corridas, o tempo, a distância e o total) abre por sua vez.
+O dia encerrado fica guardado em **Jornadas**: um seletor escolhe o ano e mostra
+os ganhos dele; abaixo a lista é em dois níveis, o mês ("out/2026", com quantas
+jornadas e o total) abre e, dentro dele, cada dia ("Jornada 01/10", com as
+corridas, o tempo, a distância e o total) abre por sua vez. Essa tela continua
+no endereço `#corridas-jornadas`, mas **não tem mais botão** que leve a ela: o
+atalho saiu da tela de Corridas.
 
 Enquanto a jornada está aberta, a distância do dia é o odômetro menos a
 quilometragem de saída; ao encerrar, vale a leitura final.
@@ -134,7 +134,8 @@ ele. Ele existe por três motivos:
 
 O formulário do carro é centralizado: cada rótulo fica em verde, no meio da sua
 caixa, e o que é digitado também sai centralizado. Um **\*** verde ao lado do
-rótulo marca o que é obrigatório. A
+rótulo marca o que é obrigatório, no app todo; o login é a exceção, onde e-mail
+e senha são obrigatórios mas sem a marca. A
 marca vem do próprio `required` do campo, então não dá para o rótulo dizer uma
 coisa e a validação outra; o asterisco é decorativo (`aria-hidden`), porque
 quem usa leitor de tela já ouve a obrigatoriedade pelo campo. No cadastro do

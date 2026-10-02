@@ -393,7 +393,10 @@ main:focus{outline:none}
 .list-toolbar.history-bar{display:grid;grid-template-columns:minmax(0,auto) 74px minmax(0,1fr);align-items:center;gap:8px;width:100%}
 .list-toolbar.history-bar h2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
 .list-toolbar.history-bar>select{width:100%;min-width:0;min-height:44px;margin:0;font-size:12.5px;padding:8px 26px 8px 9px;background-position:right 9px center}
-.list-toolbar.history-bar>#history-year,.list-toolbar.history-bar>#ride-year{text-align:center}
+.list-toolbar.history-bar>select{text-align:center}
+/* O texto centra entre o recuo da esquerda e a seta; o recuo da esquerda
+   acompanha o da direita menos a seta, para o centro ser o centro de fato. */
+.list-toolbar.history-bar>select{padding-left:17px}
 /* Na tela estreita a sobra não dá para "Recarga elétrica": o nome e o ano
    cedem alguns pixels para o filtro da direita caber inteiro. */
 @media(max-width:360px){

@@ -277,8 +277,6 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
    para as corridas e para os gastos. Nas corridas o crachá e o botão também
    encolhem: com a data no meio, nomes curtos como "Particular" não cabiam
    inteiros numa tela de 320 px. */
-.row-day{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0}
-.fold-row:has(.row-day){gap:9px}
 .fold-row .journey-ride .platform-logo{width:32px;height:32px;font-size:15px;border-radius:10px}
 .fold-row .journey-ride{gap:9px}
 .ride-receipt{width:32px;height:32px;min-height:32px}
@@ -447,15 +445,6 @@ main:focus{outline:none}
 .fold-body{padding:2px 12px 4px}
 .fold-row{padding:8px 0;gap:10px}
 .fold-body .fold-row:has(.ride-end){padding:8px 0;gap:7px}
-.fold-body .fold-row:has(.row-day){display:grid;grid-template-columns:minmax(0,1fr) 40px 128px;gap:7px;align-items:center}
-.fold-row .row-day{width:100%;text-align:center;font-variant-numeric:tabular-nums}
-.fold-row:has(.row-day)>:first-child{min-width:0;overflow-wrap:anywhere}
-.fold-row:has(.row-day)>.mono{justify-self:end;text-align:right;font-size:13px;white-space:nowrap}
-.fold-row:has(.row-day) .journey-ride{gap:6px}
-.fold-row:has(.row-day) .journey-ride .platform-logo{width:26px;height:26px;font-size:13px;border-radius:8px}
-.fold-row:has(.row-day) .journey-ride strong{font-size:13px}
-.fold-row:has(.row-day) .ride-end{display:grid;grid-template-columns:minmax(0,1fr) 32px;gap:6px;align-items:center;min-width:0}
-.fold-row:has(.row-day) .ride-end>.mono{text-align:right;font-size:13px;white-space:nowrap}
 .fold-body>.fold-box{margin:8px 0;border-radius:11px}
 .fold-body>.fold-box:first-child{margin-top:8px}
 .fold-body>.fold-box .fold-head{padding:9px 10px}
@@ -688,11 +677,16 @@ function closeStaleShift(){
  const a=state.activeShift;
  if(!a||a.date===localDate())return false;
  const encerrada=a.endKm!=null;
+ const fim=encerrada?a.endKm:Math.max(a.startKm,state.km);
  state.shifts.push({id:a.id,date:a.date,startKm:a.startKm,
-  endKm:encerrada?a.endKm:Math.max(a.startKm,state.km),
+  endKm:fim,
   minutes:encerrada?(a.worked||0):shiftMinutes(a,dayEnd(a.date)),
   auto:!encerrada});
  state.activeShift=null;
+ /* Quem estava rodando na virada não teve como dar a leitura final: o app
+    fecha com o último km que conhece e guarda o pedido para perguntar. Quem
+    já tinha encerrado deu a leitura dele; aí não há o que perguntar. */
+ if(!encerrada)state.askKm={id:a.id,date:a.date,startKm:a.startKm,km:fim};
  /* quem encerrou já sabe que encerrou; o aviso é para quem esqueceu */
  return encerrada?'fim':'auto';
 }
@@ -703,6 +697,12 @@ const yearsOf=datas=>[...new Set([...datas.map(d=>Number(String(d).slice(0,4))),
 const yearSelect=(id,anos,atual)=>`<select id="${id}" aria-label="Escolher o ano">${anos.map(a=>`<option ${a===atual?'selected':''}>${a}</option>`).join('')}</select>`;
 const monthLabel=mes=>new Date(Number(mes.slice(0,4)),Number(mes.slice(5,7))-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace('.','')+'/'+mes.slice(0,4);
 const dayLabel=date=>date.slice(8,10)+'/'+date.slice(5,7);
+/* "Qui · 02/10": o dia da semana ajuda a reconhecer o dia sem ocupar a linha
+   (a maiúscula vem do capitalize da própria caixa). */
+const dayHead=date=>new Date(date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')+' · '+dayLabel(date);
+/* As listas já vêm da mais recente para a mais antiga, então juntar as vizinhas
+   do mesmo dia basta: a ordem dos dias sai certa sozinha. */
+function byDay(itens){const dias=[];for(const x of itens){const u=dias[dias.length-1];if(u&&u[0]===x.date)u[1].push(x);else dias.push([x.date,[x]]);}return dias;}
 function toggleJourneyMonth(mes){
  if(journeyMonthsOpen===null)journeyMonthsOpen=new Set();
  journeyMonthsOpen.has(mes)?journeyMonthsOpen.delete(mes):journeyMonthsOpen.add(mes);
@@ -785,12 +785,21 @@ function financePage(){const t=totals(),fuel=t.expenses.filter(e=>e.category==='
 /* ===== Histórico de Gastos =====
    Tela própria, com um ano por vez e cada mês numa caixa que abre e fecha —
    assim uma lista longa não empurra o resto da tela de Gastos para baixo. */
-let historyYear=new Date().getFullYear(),historyOpen=null;
+let historyYear=new Date().getFullYear(),historyOpen=null,expenseDaysOpen=null;
 let journeyYear=new Date().getFullYear(),maintenanceYear=new Date().getFullYear(),maintenanceMonthsOpen=null,maintenanceOpen=null;
 const monthName=(y,m)=>new Date(y,m,1).toLocaleDateString('pt-BR',{month:'long'});
+const expenseYearList=()=>state.expenses.filter(e=>Number(e.date.slice(0,4))===historyYear&&(expenseFilter==='Todas'||e.category===expenseFilter))
+ .sort((a,b)=>b.date.localeCompare(a.date));
 function toggleHistoryMonth(m){
  if(historyOpen===null)historyOpen=new Set();
- historyOpen.has(m)?historyOpen.delete(m):historyOpen.add(m);
+ if(expenseDaysOpen===null)expenseDaysOpen=new Set();
+ if(historyOpen.has(m))historyOpen.delete(m);
+ else{historyOpen.add(m);abrirDiaDoMes(expenseYearList(),m,expenseDaysOpen);}
+ render();
+}
+function toggleExpenseDay(d){
+ if(expenseDaysOpen===null)expenseDaysOpen=new Set();
+ expenseDaysOpen.has(d)?expenseDaysOpen.delete(d):expenseDaysOpen.add(d);
  render();
 }
 function expenseHistoryPage(){
@@ -798,10 +807,10 @@ function expenseHistoryPage(){
     vira o ano, 2027 aparece sozinho, depois 2028, e por aí vai. */
  const anos=yearsOf(state.expenses.map(e=>e.date));
  if(!anos.includes(historyYear))historyYear=anos[0];
- const doAno=state.expenses.filter(e=>Number(e.date.slice(0,4))===historyYear&&(expenseFilter==='Todas'||e.category===expenseFilter))
-  .sort((a,b)=>b.date.localeCompare(a.date));
+ const doAno=expenseYearList();
  const meses=[...new Set(doAno.map(e=>Number(e.date.slice(5,7))-1))].sort((a,b)=>b-a);
  if(historyOpen===null)historyOpen=new Set(meses.length?[meses[0]]:[]);
+ if(expenseDaysOpen===null)expenseDaysOpen=new Set(doAno.length?[doAno[0].date]:[]);
  const total=doAno.reduce((a,e)=>a+e.amount,0);
  return title('Histórico de Gastos','Escolha o ano e abra o mês que quiser conferir.')+
  `<div class="list-toolbar history-bar"><h2 class="accent">Lançamentos</h2>${yearSelect('history-year',anos,historyYear)}<select id="expense-filter" aria-label="Filtrar gastos por categoria">${['Todas',...categories].map(x=>`<option ${expenseFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
@@ -812,7 +821,14 @@ function expenseHistoryPage(){
    <span class="fold-chevron">${icon('chevron')}</span>
    <span class="fold-name"><strong>${monthName(historyYear,m)}</strong><small>${itens.length} ${itens.length===1?'lançamento':'lançamentos'}</small></span>
    <span class="fold-total mono">${money(soma)}</span></button>
-   ${aberto?`<div class="fold-body">${itens.map(e=>`<div class="fold-row"><strong>${esc(e.description||e.category)}</strong><span class="row-day">${dayLabel(e.date)}</span><span class="mono">${money(e.amount)}</span></div>`).join('')}</div>`:''}</div>`;
+   ${aberto?`<div class="fold-body">${byDay(itens).map(([dia,doDia])=>{
+    const somaDia=doDia.reduce((a,e)=>a+e.amount,0),abertoDia=expenseDaysOpen.has(dia);
+    return `<div class="fold-box ${abertoDia?'open':''}"><button type="button" class="fold-head" data-expense-day="${esc(dia)}" aria-expanded="${abertoDia}">
+     <span class="fold-chevron">${icon('chevron')}</span>
+     <span class="fold-name"><strong>${dayHead(dia)}</strong><small>${doDia.length} ${doDia.length===1?'lançamento':'lançamentos'}</small></span>
+     <span class="fold-total mono">${money(somaDia)}</span></button>
+     ${abertoDia?`<div class="fold-body">${doDia.map(e=>`<div class="fold-row"><strong>${esc(e.description||e.category)}</strong><span class="mono">${money(e.amount)}</span></div>`).join('')}</div>`:''}</div>`;
+   }).join('')}</div>`:''}</div>`;
  }).join(''):`<p class="empty">Nenhum gasto ${expenseFilter==='Todas'?'':'de '+esc(expenseFilter)+' '}em ${historyYear}.</p>`}`;
 }
 function escolherPlano(id){
@@ -876,19 +892,37 @@ function supportPage(){
 /* ===== Histórico de Corridas =====
    Mesmo molde do histórico de gastos: escolhe o ano, filtra pela plataforma e
    abre o mês. A diferença é o botão de comprovante em cada corrida. */
-let rideYear=new Date().getFullYear(),rideHistoryOpen=null;
+let rideYear=new Date().getFullYear(),rideHistoryOpen=null,rideDaysOpen=null;
+/* a mesma lista que a tela usa, para o toque no mês saber quais são os dias */
+const rideYearList=()=>state.rides.filter(r=>Number(r.date.slice(0,4))===rideYear&&(rideFilter==='Todas'||r.platform===rideFilter))
+ .sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+/* Abrir um mês já mostra o dia mais recente dele: sem isso, abrir um mês antigo
+   mostraria só nomes de dias e pediria um toque a mais para ver qualquer coisa.
+   Se a pessoa já tinha um dia daquele mês aberto, a escolha dela fica. */
+function abrirDiaDoMes(lista,mes,abertos){
+ if([...abertos].some(d=>Number(d.slice(5,7))-1===mes))return;
+ const x=lista.find(i=>Number(i.date.slice(5,7))-1===mes);
+ if(x)abertos.add(x.date);
+}
 function toggleRideMonth(m){
  if(rideHistoryOpen===null)rideHistoryOpen=new Set();
- rideHistoryOpen.has(m)?rideHistoryOpen.delete(m):rideHistoryOpen.add(m);
+ if(rideDaysOpen===null)rideDaysOpen=new Set();
+ if(rideHistoryOpen.has(m))rideHistoryOpen.delete(m);
+ else{rideHistoryOpen.add(m);abrirDiaDoMes(rideYearList(),m,rideDaysOpen);}
+ render();
+}
+function toggleRideDay(d){
+ if(rideDaysOpen===null)rideDaysOpen=new Set();
+ rideDaysOpen.has(d)?rideDaysOpen.delete(d):rideDaysOpen.add(d);
  render();
 }
 function rideHistoryPage(){
  const anos=yearsOf(state.rides.map(r=>r.date));
  if(!anos.includes(rideYear))rideYear=anos[0];
- const doAno=state.rides.filter(r=>Number(r.date.slice(0,4))===rideYear&&(rideFilter==='Todas'||r.platform===rideFilter))
-  .sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+ const doAno=rideYearList();
  const meses=[...new Set(doAno.map(r=>Number(r.date.slice(5,7))-1))].sort((a,b)=>b-a);
  if(rideHistoryOpen===null)rideHistoryOpen=new Set(meses.length?[meses[0]]:[]);
+ if(rideDaysOpen===null)rideDaysOpen=new Set(doAno.length?[doAno[0].date]:[]);
  const total=doAno.reduce((a,r)=>a+r.amount,0);
  return title('Histórico de Corridas','Escolha o ano e abra o mês que quiser conferir.')+
  `<div class="list-toolbar history-bar"><h2 class="accent">Corridas</h2>${yearSelect('ride-year',anos,rideYear)}<select id="ride-filter" aria-label="Filtrar corridas por plataforma">${['Todas',...platformList()].map(x=>`<option ${rideFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
@@ -899,9 +933,15 @@ function rideHistoryPage(){
    <span class="fold-chevron">${icon('chevron')}</span>
    <span class="fold-name"><strong>${monthName(rideYear,m)}</strong><small>${itens.length} ${itens.length===1?'corrida':'corridas'}</small></span>
    <span class="fold-total mono">${money(soma)}</span></button>
-   ${aberto?`<div class="fold-body">${itens.map(r=>`<div class="fold-row"><span class="journey-ride">${platformLogo(r.platform)}<strong>${esc(r.platform)}</strong></span>
-    <span class="row-day">${dayLabel(r.date)}</span>
-    <span class="ride-end"><span class="mono">${money(r.amount)}</span><button type="button" class="icon-btn ride-receipt" ${temPremium()?`data-ride-receipt="${esc(r.id)}"`:'data-action="premiumAviso"'} aria-label="Gerar Comprovante da corrida de ${money(r.amount)} na ${esc(r.platform)} em ${prettyDate(r.date)}">${icon('receipt')}</button></span></div>`).join('')}</div>`:''}</div>`;
+   ${aberto?`<div class="fold-body">${byDay(itens).map(([dia,doDia])=>{
+    const somaDia=doDia.reduce((a,r)=>a+r.amount,0),abertoDia=rideDaysOpen.has(dia);
+    return `<div class="fold-box ${abertoDia?'open':''}"><button type="button" class="fold-head" data-ride-day="${esc(dia)}" aria-expanded="${abertoDia}">
+     <span class="fold-chevron">${icon('chevron')}</span>
+     <span class="fold-name"><strong>${dayHead(dia)}</strong><small>${doDia.length} ${doDia.length===1?'corrida':'corridas'}</small></span>
+     <span class="fold-total mono">${money(somaDia)}</span></button>
+     ${abertoDia?`<div class="fold-body">${doDia.map(r=>`<div class="fold-row"><span class="journey-ride">${platformLogo(r.platform)}<strong>${esc(r.platform)}</strong></span>
+      <span class="ride-end"><span class="mono">${money(r.amount)}</span><button type="button" class="icon-btn ride-receipt" ${temPremium()?`data-ride-receipt="${esc(r.id)}"`:'data-action="premiumAviso"'} aria-label="Gerar Comprovante da corrida de ${money(r.amount)} na ${esc(r.platform)} em ${prettyDate(r.date)}">${icon('receipt')}</button></span></div>`).join('')}</div>`:''}</div>`;
+   }).join('')}</div>`:''}</div>`;
  }).join(''):`<p class="empty">Nenhuma corrida ${rideFilter==='Todas'?'':'na '+esc(rideFilter)+' '}em ${rideYear}.</p>`}`;
 }
 /* O comprovante já nasce com o valor e a data da corrida; o trajeto é o que
@@ -1104,7 +1144,7 @@ $('app-shell').classList.toggle('terms-mode',needsConsent);
 if(!demoSignedIn){if(location.hash!=='#login')history.replaceState(null,'','#login');$('view').innerHTML=loginScreen();document.title='LucroInDrive — Login';return;}
 if(needsConsent){if(location.hash!=='#termos')history.replaceState(null,'','#termos');$('view').innerHTML=termsScreen();document.title='LucroInDrive — Antes de começar';return;}
 if(location.hash==='#termos'||location.hash==='#login')history.replaceState(null,'','#inicio');
-anotarTrilha();const route=location.hash.slice(1);view=navigation.some(n=>n[0]===route)||SUBVIEWS[route]?route:'inicio';const sub=SUBVIEWS[view],navView=sub?sub.parent:view,pageName=sub?sub.label:navigation.find(n=>n[0]===view)[1];$('desktop-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}${l}</button>`).join('');$('mobile-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}<span>${l}</span></button>`).join('');$('breadcrumb-name').textContent=pageName;$('topbar-back').hidden=!sub;$('side-car-name').textContent=state.vehicle?[vehicleName(state.vehicle),state.vehicle.year].filter(Boolean).join(' · '):'Nenhum carro cadastrado';$('side-km').textContent=number(state.km)+' km registrados';$('header-date').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});$('view').innerHTML=({inicio:home,corridas:ridesPage,financeiro:financePage,carro:carPage,config:settingsPage,'config-plano':planPage,'config-conta':accountPage,'config-suporte':supportPage,'corridas-jornadas':journeysPage,'corridas-historico':rideHistoryPage,'carro-manutencao':maintenancePage,'carro-manutencoes':maintenanceLogPage,'corridas-comprovante':receiptPage,'corridas-comprovantes':receiptsPage,'financeiro-historico':expenseHistoryPage,'financeiro-relatorios':reportsPage})[view]();document.title='LucroInDrive — '+pageName;updateStorageNote();}
+anotarTrilha();const route=location.hash.slice(1);view=navigation.some(n=>n[0]===route)||SUBVIEWS[route]?route:'inicio';const sub=SUBVIEWS[view],navView=sub?sub.parent:view,pageName=sub?sub.label:navigation.find(n=>n[0]===view)[1];$('desktop-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}${l}</button>`).join('');$('mobile-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}<span>${l}</span></button>`).join('');$('breadcrumb-name').textContent=pageName;$('topbar-back').hidden=!sub;$('side-car-name').textContent=state.vehicle?[vehicleName(state.vehicle),state.vehicle.year].filter(Boolean).join(' · '):'Nenhum carro cadastrado';$('side-km').textContent=number(state.km)+' km registrados';$('header-date').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});$('view').innerHTML=({inicio:home,corridas:ridesPage,financeiro:financePage,carro:carPage,config:settingsPage,'config-plano':planPage,'config-conta':accountPage,'config-suporte':supportPage,'corridas-jornadas':journeysPage,'corridas-historico':rideHistoryPage,'carro-manutencao':maintenancePage,'carro-manutencoes':maintenanceLogPage,'corridas-comprovante':receiptPage,'corridas-comprovantes':receiptsPage,'financeiro-historico':expenseHistoryPage,'financeiro-relatorios':reportsPage})[view]();document.title='LucroInDrive — '+pageName;updateStorageNote();maybeAskStaleKm();}
 function go(v){if(location.hash==='#'+v){render();return;}location.hash=v;}
 /* Onde a pessoa esteve, na ordem. Cada entrada do histórico recebe um número e
    a trilha diz qual tela é cada número. Com isso a seta do app volta de
@@ -1123,6 +1163,20 @@ function toast(msg){clearTimeout(toastTimer);$('toast').textContent=msg;$('toast
 let returnFocus=null;
 function openDialog(title,body){returnFocus=document.activeElement;$('dialog-title').textContent=title;$('dialog-body').innerHTML=body;if(!$('dialog').open)$('dialog').showModal();}
 function closeDialog(){$('dialog').close();}
+/* A pergunta da virada do dia aparece assim que dá para mostrá-la: ao abrir o
+   app ou na hora, se ele estava aberto. Pergunta-se uma vez — o pedido sai do
+   estado quando a caixa abre, então recarregar não vira interrogatório. */
+let staleAsk=null;
+function askStaleKm(){
+ const a=state.askKm;if(!a)return;
+ staleAsk=a;state.askKm=null;save();
+ openDialog('Jornada encerrada na virada do dia',
+  `<p class="dialog-intro">O dia virou com a jornada de ${prettyDate(a.date)} aberta, então ela foi encerrada com ${number(a.km)} km — a última leitura que o app conhecia. Informe o km do fim da jornada para acertar a distância daquele dia.</p>
+   <form id="stale-km-form"><div class="form-grid">${field('Quilometragem no fim da jornada','km','number',a.km,`required min="${a.startKm}" max="9999999" step="1" inputmode="numeric"`,true)}</div>
+   <p class="form-error" id="form-error" role="alert"></p>
+   <div class="form-actions"><button type="button" class="btn secondary" data-action="close">Manter ${number(a.km)} km</button><button type="submit" class="btn primary">Salvar km</button></div></form>`);
+}
+function maybeAskStaleKm(){if(state.askKm&&!$('dialog').open)askStaleKm();}
 $('dialog').addEventListener('close',()=>{fipeDialogOpen=false;vehicleDraft=null;receiptToRemove=null;maintenanceToRemove=null;if(returnFocus?.isConnected)returnFocus.focus();});
 /* O "*" sai do próprio required do campo, para a marca não depender de
    alguém lembrar de pôr nos dois lugares. Ele é decorativo: quem usa leitor de
@@ -1751,8 +1805,8 @@ fipeManual:()=>{
  openDialog('Anotar o valor da FIPE',form('fipe-manual-form','Consultou no site da FIPE? Anote aqui o valor que apareceu. Ele fica salvo apenas neste navegador.',field('Valor (R$)','value','number',atual,'required min="0.01" max="9999999" step="0.01" inputmode="decimal" placeholder="0,00"')+field('Ano do modelo','modelYear','number',v.year||'',`min="1950" max="${maxYear()}" step="1" inputmode="numeric"`)+`<p class="small muted" style="grid-column:1/-1">A consulta oficial fica em <a href="${FIPE_SITE}" target="_blank" rel="noopener noreferrer">veiculos.fipe.org.br</a>.</p>`,'Salvar valor'));
 },
 about:()=>openDialog('Bem-vindo ao LucroInDrive',`<span class="tag ok">Primeiro esboço</span><p class="body-text" style="margin-top:20px">Explore corridas, gastos, jornada, metas e manutenção com dados de exemplo. Os lançamentos alteram os resumos e ficam salvos apenas neste navegador.</p><ul><li>O login é demonstrativo; não há autenticação ou backup online.</li><li>A cotação da FIPE é consultada de verdade, em uma API pública, depois que você cadastra o carro.</li><li>Este app é independente do TMyCar.</li></ul><p class="body-text">Para começar novamente, use “Restaurar demonstração”.</p><button class="btn primary" style="width:100%;margin-top:15px" data-action="close">Explorar o app</button><button class="btn secondary" style="width:100%;margin-top:10px" data-action="logout">Voltar ao login</button>`),reset:()=>openDialog('Restaurar demonstração?',`<p class="dialog-intro">Os lançamentos feitos neste esboço serão removidos deste navegador. Os dados de exemplo serão recriados.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn primary" data-action="confirmReset">Restaurar</button></div>`),confirmReset:()=>{state=seed();period='today';rideFilter='Todas';expenseFilter='Todas';vehicleDraft=null;resetFipeState();save();closeDialog();render();toast('Demonstração restaurada.');}};
-document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.plan)escolherPlano(el.dataset.plan);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.rideMonth!==undefined)toggleRideMonth(Number(el.dataset.rideMonth));if(el.dataset.rideReceipt)receiptFromRide(el.dataset.rideReceipt);if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.maintenanceMonth)toggleMaintenanceMonth(el.dataset.maintenanceMonth);if(el.dataset.maintenance)toggleMaintenance(el.dataset.maintenance);if(el.dataset.maintenanceRemove)askRemoveMaintenance(el.dataset.maintenanceRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
-document.addEventListener('change',e=>{if(e.target.id==='consent-confirm'){consentPending=e.target.checked;$('consent-enter').disabled=!consentPending;$('consent-status').textContent=consentPending?'Tudo pronto para continuar.':'Confirme sua idade e o aceite para continuar.';}if(e.target.id==='ride-filter'){rideFilter=e.target.value;rideHistoryOpen=null;render();}if(e.target.id==='ride-year'){rideYear=Number(e.target.value);rideHistoryOpen=null;render();}if(e.target.id==='history-year'){historyYear=Number(e.target.value);historyOpen=null;render();}if(e.target.id==='journey-year'){journeyYear=Number(e.target.value);journeyMonthsOpen=null;journeysOpen=null;render();}if(e.target.id==='maintenance-year'){maintenanceYear=Number(e.target.value);maintenanceMonthsOpen=null;maintenanceOpen=null;render();}if(e.target.id==='expense-filter'){expenseFilter=e.target.value;historyOpen=null;render();}if(vehicleDraft&&e.target.form&&e.target.form.id==='vehicle-form'&&['brand','model','versionIdx','fuel'].includes(e.target.name)){readVehicleDraft();syncVehicleDraft(e.target.name);repaintVehicleForm(e.target.name);}});
+document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.plan)escolherPlano(el.dataset.plan);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.rideMonth!==undefined)toggleRideMonth(Number(el.dataset.rideMonth));if(el.dataset.rideDay)toggleRideDay(el.dataset.rideDay);if(el.dataset.expenseDay)toggleExpenseDay(el.dataset.expenseDay);if(el.dataset.rideReceipt)receiptFromRide(el.dataset.rideReceipt);if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.maintenanceMonth)toggleMaintenanceMonth(el.dataset.maintenanceMonth);if(el.dataset.maintenance)toggleMaintenance(el.dataset.maintenance);if(el.dataset.maintenanceRemove)askRemoveMaintenance(el.dataset.maintenanceRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
+document.addEventListener('change',e=>{if(e.target.id==='consent-confirm'){consentPending=e.target.checked;$('consent-enter').disabled=!consentPending;$('consent-status').textContent=consentPending?'Tudo pronto para continuar.':'Confirme sua idade e o aceite para continuar.';}if(e.target.id==='ride-filter'){rideFilter=e.target.value;rideHistoryOpen=null;rideDaysOpen=null;render();}if(e.target.id==='ride-year'){rideYear=Number(e.target.value);rideHistoryOpen=null;rideDaysOpen=null;render();}if(e.target.id==='history-year'){historyYear=Number(e.target.value);historyOpen=null;expenseDaysOpen=null;render();}if(e.target.id==='journey-year'){journeyYear=Number(e.target.value);journeyMonthsOpen=null;journeysOpen=null;render();}if(e.target.id==='maintenance-year'){maintenanceYear=Number(e.target.value);maintenanceMonthsOpen=null;maintenanceOpen=null;render();}if(e.target.id==='expense-filter'){expenseFilter=e.target.value;historyOpen=null;expenseDaysOpen=null;render();}if(vehicleDraft&&e.target.form&&e.target.form.id==='vehicle-form'&&['brand','model','versionIdx','fuel'].includes(e.target.name)){readVehicleDraft();syncVehicleDraft(e.target.name);repaintVehicleForm(e.target.name);}});
 document.addEventListener('input',e=>{if(e.target.id==='f-km'&&e.target.form&&e.target.form.id==='odometer-form')repaintKmWarning();if(e.target.id==='fipe-search'){fipeState.filter=e.target.value;if($('fipe-options'))$('fipe-options').innerHTML=fipeOptions();}if(receiptDraft&&e.target.form&&e.target.form.id==='receipt-form'){readReceiptDraft();if($('receipt-preview'))$('receipt-preview').textContent=receiptText(receiptDraft);}});
 document.addEventListener('submit',e=>{
  e.preventDefault();const formEl=e.target;if(!formEl.checkValidity()){formEl.reportValidity();return;}const d=Object.fromEntries(new FormData(formEl)),fail=m=>{$('form-error').textContent=m;};let message='';
@@ -1769,6 +1823,7 @@ document.addEventListener('submit',e=>{
  case 'odometer-form':{const novo=Number(d.km),antes=state.km;state.km=novo;message=novo<antes?`Odômetro voltou de ${number(antes)} km para ${number(novo)} km. Os prazos das revisões foram recalculados.`:'Quilometragem e prazos de manutenção atualizados.';break;}
  case 'start-form':if(state.activeShift)return fail('Já existe uma jornada de hoje. Continue a dela em vez de abrir outra.');state.km=Number(d.km);state.activeShift={id:uid(),date:localDate(),startKm:Number(d.km),startedAt:Date.now(),worked:0,runningSince:Date.now(),endKm:null};message='Jornada iniciada. Você pode pausar, encerrar e voltar quando quiser.';break;
  case 'end-form':{const a=state.activeShift;if(!a)return fail('Não há uma jornada em andamento.');a.worked=shiftMinutes(a);a.runningSince=null;a.endKm=Number(d.km);a.endedAt=Date.now();state.km=Number(d.km);message='Jornada encerrada. Se voltar a rodar hoje, é só continuar: ela fecha de vez na virada do dia.';break;}
+ case 'stale-km-form':{const a=staleAsk;if(!a)return fail('Jornada não encontrada.');const j=state.shifts.find(x=>x.id===a.id);if(!j)return fail('Jornada não encontrada.');const km=Number(d.km);if(km<j.startKm)return fail(`A leitura do fim não pode ser menor que a da saída (${number(j.startKm)} km).`);j.endKm=km;state.km=Math.max(state.km,km);staleAsk=null;message=`Jornada de ${prettyDate(j.date)} fechada com ${number(km)} km.`;break;}
  case 'service-form':{const s=state.services.find(s=>s.id===d.serviceId);if(!s)return fail('Serviço não encontrado.');const km=Number(d.km),nextKm=d.nextKm?Number(d.nextKm):null,amount=d.amount?Number(d.amount):0;if(!nextKm&&!d.nextDate)return fail('Informe a próxima quilometragem ou a próxima data.');if(nextKm!==null&&nextKm<=km)return fail('A próxima quilometragem precisa ser maior que a do serviço.');if(d.nextDate&&d.nextDate<=d.date)return fail('A próxima data precisa ser posterior à data do serviço.');if(s.lastDate&&d.date<s.lastDate)return fail('A data precisa ser igual ou posterior à última revisão registrada.');if(s.lastKm!=null&&km<s.lastKm)return fail('A quilometragem não pode ser menor que a da última revisão.');s.lastKm=km;s.lastDate=d.date;s.nextKm=nextKm;s.nextDate=d.nextDate||null;state.km=Math.max(state.km,km);state.serviceHistory=state.serviceHistory||[];const serviceRecordId=uid();state.serviceHistory.push({id:serviceRecordId,serviceId:s.id,date:d.date,km,amount,shop:d.shop.trim(),nextKm,nextDate:d.nextDate||null});if(amount>0)state.expenses.push({id:uid(),category:'Manutenção',description:s.name+(d.shop.trim()?' · '+d.shop.trim():''),date:d.date,amount,serviceId:serviceRecordId});message=amount>0?'Revisão salva e valor incluído nos gastos.':'Revisão salva. Próximos prazos atualizados.';break;}
  case 'maintenance-form':{
   const desc=String(d.description||'').trim().replace(/\s+/g,' ');
@@ -1782,7 +1837,7 @@ document.addEventListener('submit',e=>{
   /* mesma regra dos gastos do dia a dia: entra no Financeiro pela data */
   state.expenses.push({id:uid(),category:'Manutenção',description:desc+(oficina?' · '+oficina:''),date:d.date,amount:valor,maintenanceId:registro.id});
   state.km=Math.max(state.km,km);
-  maintenanceYear=Number(d.date.slice(0,4));maintenanceMonthsOpen=null;maintenanceOpen=null;historyOpen=null;
+  maintenanceYear=Number(d.date.slice(0,4));maintenanceMonthsOpen=null;maintenanceOpen=null;historyOpen=null;expenseDaysOpen=null;
   message='Manutenção registrada e lançada nos gastos.';
   break;
  }
@@ -1885,7 +1940,7 @@ hydrateIcons();normalizeState();save();render();
 setInterval(()=>{
  if(!demoSignedIn||!hasConsent())return;
  const fechou=closeStaleShift();
- if(fechou){save();if(!$('dialog').open){render();if(fechou==='auto')toast('O dia virou: a jornada anterior foi encerrada.');}return;}
+ if(fechou){save();if(!$('dialog').open)render();return;}
  if(state.activeShift&&journeyRunning(state.activeShift)&&view==='inicio'&&!$('dialog').open)render();
 },60000);
 </script>

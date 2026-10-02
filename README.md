@@ -82,10 +82,11 @@ tela: resumo por período (gastos registrados, combustível e recarga, gasto por
 km), lançamento de despesas e dois botões que levam a telas próprias —
 
 - **Histórico de Gastos**: uma barra em três partes — "Lançamentos" à
-  esquerda, o ano no meio e a categoria à direita — e cada
-  mês numa caixa que abre e fecha, com o total do mês e do ano. Cada lançamento
-  mostra a descrição, a data entre ela e o valor — em fonte menor, a mesma do
-  histórico de corridas — e o valor. O ano corrente está sempre na lista, tenha
+  esquerda, o ano no meio e a categoria à direita — e a lista em dois níveis de
+  caixa: o mês abre e, dentro dele, cada dia ("Sex · 02/10", com quantos
+  lançamentos e o total do dia) abre nos lançamentos daquele dia, cada um com a
+  descrição e o valor. A data não se repete em cada linha porque é o nome da
+  caixa que a pessoa abriu. O ano corrente está sempre na lista, tenha
   lançamento ou não, então ele aparece sozinho quando o ano vira;
 - **Relatórios**: resultado do período, por hora e por km, ganhos por
   plataforma e onde você gastou.
@@ -131,10 +132,16 @@ estreitas o nome e o ano cedem alguns pixels para isso.
 Os `<select>` do app desenham a própria seta (`appearance:none`). A seta nativa
 é pintada por cima do texto, com um tamanho que cada navegador escolhe, e isso
 tornava impossível calcular quanto texto cabe — além de deixar o campo
-diferente em cada navegador. Cada corrida mostra a plataforma, a data entre ela e o valor — em
-fonte menor, para caber — e, ao lado do valor, um botão de comprovante — ele abre a tela de gerar comprovante já com o valor e a data
-daquela corrida preenchidos; o trajeto fica para o motorista, que é a parte que
-só ele sabe. A tela de Corridas em si ficou com o resumo do período e os três
+diferente em cada navegador.
+
+Dentro do mês vem um nível a mais: uma caixa por dia ("Sex · 02/10", com
+quantas corridas e o total do dia), que abre nas corridas daquele dia — o dia
+mais recente já vem aberto, os outros fechados. Cada corrida mostra a
+plataforma, o valor e, ao lado dele, um botão de comprovante que abre a tela de
+gerar comprovante já com o valor e a data daquela corrida preenchidos; o
+trajeto fica para o motorista, que é a parte que só ele sabe. A data saiu da
+linha quando o dia virou caixa: repetir "02/10" em oito corridas do dia 02/10 é
+só ruído, e o espaço foi para o nome da plataforma. A tela de Corridas em si ficou com o resumo do período e os três
 atalhos: histórico, Jornadas e gerar comprovante.
 
 O dia encerrado fica guardado em **Jornadas**: um seletor escolhe o ano e mostra
@@ -171,6 +178,15 @@ varar a madrugada e marcar 30 horas — e com a quilometragem conhecida, marcada
 em Jornadas como *Encerrada na virada do dia*. Se a pessoa já tinha encerrado,
 ela só é guardada como está, sem marca nenhuma e sem aviso: ninguém precisa ser
 avisado do que já fez. Nos dois casos, o dia novo começa com a jornada dele.
+
+Quem estava rodando na virada não teve como dar a leitura final, então o app
+**pergunta o km** — na hora, se estava aberto, ou na primeira vez que abrir
+depois. A caixa diz de que dia é a jornada e com quantos km ela foi fechada,
+e traz os dois caminhos: informar a leitura certa ou manter a que o app
+conhecia. A pergunta é feita uma vez (o pedido sai do estado quando a caixa
+abre), para recarregar a página não virar interrogatório. Quem encerrou a
+jornada já deu a leitura dele, e quem não tinha jornada aberta não tem o que
+responder: nesses casos o dia novo começa do zero, sem pergunta nenhuma.
 
 O fechamento acontece ao abrir o app e a cada minuto com ele aberto. Como é uma
 página sem servidor, não há nada rodando com o app fechado: quem fecha a

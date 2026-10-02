@@ -44,9 +44,10 @@ km), lançamento de despesas e dois botões que levam a telas próprias —
 
 - **Histórico de gastos**: o título "Lançamentos" centralizado e, logo abaixo,
   os dois seletores centralizados lado a lado — ano e categoria — e cada
-  mês numa caixa que abre e fecha, com o total do mês e do ano. O ano corrente
-  está sempre na lista, tenha lançamento ou não, então ele aparece sozinho
-  quando o ano vira;
+  mês numa caixa que abre e fecha, com o total do mês e do ano. Cada lançamento
+  mostra a descrição, a data entre ela e o valor — em fonte menor, a mesma do
+  histórico de corridas — e o valor. O ano corrente está sempre na lista, tenha
+  lançamento ou não, então ele aparece sozinho quando o ano vira;
 - **Relatórios**: resultado do período, por hora e por km, ganhos por
   plataforma e onde você gastou.
 

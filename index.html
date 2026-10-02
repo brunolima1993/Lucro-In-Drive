@@ -238,10 +238,12 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .fold-name strong .tag{margin-left:8px;vertical-align:middle;text-transform:none}
 .journey-ride{display:flex;align-items:center;gap:11px;min-width:0}
 .ride-end{display:flex;align-items:center;gap:6px;flex-shrink:0}
-/* a data cabe entre o nome e o valor com fonte menor, sem quebrar linha. O
-   crachá e o botão também encolhem aqui: com a data no meio, nomes curtos como
-   "Particular" não cabiam inteiros numa tela de 320 px. */
-.ride-day{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0}
+/* A data cabe entre o nome e o valor com fonte menor, sem quebrar linha — vale
+   para as corridas e para os gastos. Nas corridas o crachá e o botão também
+   encolhem: com a data no meio, nomes curtos como "Particular" não cabiam
+   inteiros numa tela de 320 px. */
+.row-day{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.fold-row:has(.row-day){gap:9px}
 .fold-row .journey-ride .platform-logo{width:32px;height:32px;font-size:15px;border-radius:10px}
 .fold-row .journey-ride{gap:9px}
 .ride-receipt{width:32px;height:32px;min-height:32px}
@@ -539,7 +541,7 @@ function expenseHistoryPage(){
    <span class="fold-chevron">${icon('chevron')}</span>
    <span class="fold-name"><strong>${monthName(historyYear,m)}</strong><small>${itens.length} ${itens.length===1?'lançamento':'lançamentos'}</small></span>
    <span class="fold-total mono">${money(soma)}</span></button>
-   ${aberto?`<div class="fold-body">${itens.map(e=>`<div class="fold-row"><strong>${esc(e.description||e.category)}</strong><span class="mono">${money(e.amount)}</span></div>`).join('')}</div>`:''}</div>`;
+   ${aberto?`<div class="fold-body">${itens.map(e=>`<div class="fold-row"><strong>${esc(e.description||e.category)}</strong><span class="row-day">${dayLabel(e.date)}</span><span class="mono">${money(e.amount)}</span></div>`).join('')}</div>`:''}</div>`;
  }).join(''):`<p class="empty">Nenhum gasto ${expenseFilter==='Todas'?'':'de '+esc(expenseFilter)+' '}em ${historyYear}.</p>`}`;
 }
 /* ===== Histórico de corridas =====
@@ -569,7 +571,7 @@ function rideHistoryPage(){
    <span class="fold-name"><strong>${monthName(rideYear,m)}</strong><small>${itens.length} ${itens.length===1?'corrida':'corridas'}</small></span>
    <span class="fold-total mono">${money(soma)}</span></button>
    ${aberto?`<div class="fold-body">${itens.map(r=>`<div class="fold-row"><span class="journey-ride">${platformLogo(r.platform)}<strong>${esc(r.platform)}</strong></span>
-    <span class="ride-day">${dayLabel(r.date)}</span>
+    <span class="row-day">${dayLabel(r.date)}</span>
     <span class="ride-end"><span class="mono">${money(r.amount)}</span><button type="button" class="icon-btn ride-receipt" data-ride-receipt="${esc(r.id)}" aria-label="Gerar comprovante da corrida de ${money(r.amount)} na ${esc(r.platform)} em ${prettyDate(r.date)}">${icon('receipt')}</button></span></div>`).join('')}</div>`:''}</div>`;
  }).join(''):`<p class="empty">Nenhuma corrida ${rideFilter==='Todas'?'':'na '+esc(rideFilter)+' '}em ${rideYear}.</p>`}`;
 }

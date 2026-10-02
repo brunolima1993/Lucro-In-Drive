@@ -81,7 +81,7 @@ O módulo antes chamado Gastos, hoje o guarda-chuva do que é financeiro. Na
 tela: resumo por período (gastos registrados, combustível e recarga, gasto por
 km), lançamento de despesas e dois botões que levam a telas próprias —
 
-- **Histórico de gastos**: uma barra em três partes — "Lançamentos" à
+- **Histórico de Gastos**: uma barra em três partes — "Lançamentos" à
   esquerda, o ano no meio e a categoria à direita — e cada
   mês numa caixa que abre e fecha, com o total do mês e do ano. Cada lançamento
   mostra a descrição, a data entre ela e o valor — em fonte menor, a mesma do
@@ -121,7 +121,7 @@ Uma **jornada por dia**: começar uma quando o dia já tem jornada é recusado. 
 data é o que liga a corrida à jornada dela, então não há lançamento órfão nem
 carimbo em cada corrida.
 
-O **Histórico de corridas** é um botão da tela de Corridas, no mesmo molde do
+O **Histórico de Corridas** é um botão da tela de Corridas, no mesmo molde do
 histórico de gastos: a barra de três partes ("Corridas", o ano e a plataforma),
 total do ano e uma caixa por mês que abre e fecha. O ano tem largura fixa,
 porque é sempre quatro dígitos, e o filtro da direita fica com a sobra — é ele
@@ -149,7 +149,7 @@ quilometragem de saída; ao encerrar, vale a leitura final.
 
 ### Pausar e continuar
 
-Em "Sua jornada", no Início, a jornada vai de **iniciar** a **pausar** e
+Em "Sua Jornada", no Início, a jornada vai de **iniciar** a **pausar** e
 **continuar**, quantas vezes o motorista quiser — almoço, espera, uma volta em
 casa. Em pausa o relógio simplesmente não anda: a jornada guarda os minutos já
 contados e só volta a somar quando ela continua, então pausar e voltar dez
@@ -167,7 +167,7 @@ jornada esquecida é a primeira abertura do dia seguinte.
 
 ### Comprovante de corrida
 
-Em Corridas, **Gerar comprovante** abre uma tela com o texto já pronto e os
+Em Corridas, **Gerar Comprovante** abre uma tela com o texto já pronto e os
 campos que o motorista preenche: carro (vem preenchido do cadastro, quando
 existe), local de saída, local de chegada, valor pago e data. A prévia do que o
 passageiro vai receber acompanha a digitação.
@@ -224,7 +224,7 @@ O **Painel de Manutenção** fica numa tela própria, aberta pelo botão em Meu
 carro. O botão leva só o nome: o estado de cada item já está na tela, em cada
 cartão.
 
-**Adicionar manutenção** é o botão ao lado dele, para o serviço que não está na
+**Adicionar Manutenção** é o botão ao lado dele, para o serviço que não está na
 lista de revisões: pastilha de freio, amortecedor, embreagem, o que for. Em cada
 lançamento vão o que foi feito, o valor, a quilometragem, a data e, se quiser, a
 oficina — assim dá para saber depois com quantos km a pastilha foi trocada.

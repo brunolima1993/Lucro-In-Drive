@@ -219,7 +219,7 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 /* O nome da plataforma é um rótulo: uma linha sempre. Se faltar espaço, corta
    com reticências em vez de partir a palavra ao meio. */
 .platform-cell strong,.journey-ride strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-/* ===== Histórico de gastos ===== */
+/* ===== Histórico de Gastos ===== */
 .topbar{display:grid;grid-template-columns:1fr auto 1fr;gap:10px}
 .topbar .topbar-left{grid-column:1;justify-self:start;min-width:0;display:flex;align-items:center}
 .topbar .mobile-brand{grid-column:2;justify-self:center}
@@ -651,12 +651,12 @@ const SUBVIEWS={'config':{label:'Configurações',back:'inicio'},
  'config-conta':{label:'Conta e dados',back:'config'},
  'config-suporte':{label:'Falar com o suporte',back:'config'},
  'corridas-jornadas':{label:'Jornadas',parent:'corridas'},
- 'corridas-historico':{label:'Histórico de corridas',parent:'corridas'},
+ 'corridas-historico':{label:'Histórico de Corridas',parent:'corridas'},
  'carro-manutencao':{label:'Painel de Manutenção',parent:'carro'},
- 'carro-manutencoes':{label:'Adicionar manutenção',parent:'carro'},
- 'corridas-comprovante':{label:'Gerar comprovante',parent:'corridas'},
+ 'carro-manutencoes':{label:'Adicionar Manutenção',parent:'carro'},
+ 'corridas-comprovante':{label:'Gerar Comprovante',parent:'corridas'},
  'corridas-comprovantes':{label:'Comprovantes gerados',parent:'corridas',back:'corridas-comprovante'},
- 'financeiro-historico':{label:'Histórico de gastos',parent:'financeiro'},
+ 'financeiro-historico':{label:'Histórico de Gastos',parent:'financeiro'},
  'financeiro-relatorios':{label:'Relatórios',parent:'financeiro'}};
 function selectedDate(date,p=period){if(date>localDate())return false;if(p==='today')return date===localDate();if(p==='week')return date>=dateAt(-6);return date.slice(0,7)===localDate().slice(0,7);}
 function totals(p=period){const rides=state.rides.filter(r=>selectedDate(r.date,p)),expenses=state.expenses.filter(e=>selectedDate(e.date,p)),shifts=state.shifts.filter(s=>selectedDate(s.date,p));const revenue=rides.reduce((a,r)=>a+r.amount,0),cost=expenses.reduce((a,e)=>a+e.amount,0),km=shifts.reduce((a,s)=>a+s.endKm-s.startKm,0)+(state.activeShift&&selectedDate(state.activeShift.date,p)?Math.max(0,state.km-state.activeShift.startKm):0);let minutes=shifts.reduce((a,s)=>a+s.minutes,0);if(state.activeShift&&selectedDate(state.activeShift.date,p))minutes+=shiftMinutes(state.activeShift);return{rides,expenses,revenue,cost,balance:revenue-cost,km,minutes};}
@@ -758,20 +758,20 @@ function home(){
  `<div class="section-row"><span class="caption">Visão geral</span></div>
  <div class="overview-top"><section class="panel balance"><div><div class="balance-top"><span>Seu resultado hoje</span>${icon('arrowup')}</div><div class="balance-number mono"><span class="currency">R$</span>${numberBR(t.balance)}</div></div><div class="balance-breakdown"><div><span class="circle-icon">${icon('arrowup')}</span><div><p>Ganhos</p><strong class="mono">${money(t.revenue)}</strong></div></div><div><span class="circle-icon">${icon('arrowdown')}</span><div><p>Gastos</p><strong class="mono">${money(t.cost)}</strong></div></div></div></section>
  <section class="panel panel-pad goal-card"><button class="icon-btn goal-edit" data-action="goal" aria-label="Editar meta diária">${icon('edit')}</button><div class="goal-body"><div class="goal-ring-col"><h2>Meta do dia</h2><div class="goal-ring" role="img" aria-label="${Math.min(balance>=state.goal?100:99,Math.round(pct))}% da meta diária"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" stroke="#35412e"/><circle cx="60" cy="60" r="50" stroke="var(--lime)" stroke-dasharray="${pct*3.14159} 314.159"/></svg><div class="ring-value"><strong class="mono">${Math.min(balance>=state.goal?100:99,Math.round(pct))}%</strong><span>concluído</span></div></div></div><div class="goal-copy"><p>Objetivo de resultado</p><strong class="mono">${money(state.goal)}</strong><p>${remaining>0?`Faltam <span class="positive">${money(remaining)}</span><br>para chegar lá.`:'<span class="positive">Meta alcançada!</span><br>Seu trabalho rendeu.'}</p></div></div><div class="goal-foot">${icon('flag')}A meta considera os gastos de hoje.</div></section></div>
- <section class="panel journey"><div class="journey-label"><span class="square-icon">${icon('clock')}</span><div><h3>Sua jornada</h3><p>${!state.activeShift?'Resumo de hoje':journeyRunning(state.activeShift)?'Em andamento':'Em pausa'}</p></div></div><div class="journey-values"><div class="metric"><small>Tempo</small><strong class="mono">${hours(t.minutes)}</strong></div><div class="metric"><small>Distância</small><strong class="mono">${number(t.km)} <span>km</span></strong></div><div class="metric"><small>Resultado/h</small><strong class="mono">${t.minutes>0?money(t.balance/(t.minutes/60)):'—'}</strong></div></div><div class="journey-actions">${!state.activeShift?button('Iniciar jornada','startShift','play','secondary small-btn')
+ <section class="panel journey"><div class="journey-label"><span class="square-icon">${icon('clock')}</span><div><h3>Sua Jornada</h3><p>${!state.activeShift?'Resumo de hoje':journeyRunning(state.activeShift)?'Em andamento':'Em pausa'}</p></div></div><div class="journey-values"><div class="metric"><small>Tempo</small><strong class="mono">${hours(t.minutes)}</strong></div><div class="metric"><small>Distância</small><strong class="mono">${number(t.km)} <span>km</span></strong></div><div class="metric"><small>Resultado/h</small><strong class="mono">${t.minutes>0?money(t.balance/(t.minutes/60)):'—'}</strong></div></div><div class="journey-actions">${!state.activeShift?button('Iniciar jornada','startShift','play','secondary small-btn')
   :journeyRunning(state.activeShift)?button('Pausar','pauseShift','pause','secondary small-btn')+button('Encerrar','endShift','stop','secondary small-btn')
   :button('Continuar','resumeShift','play','secondary small-btn')+button('Encerrar','endShift','stop','secondary small-btn')}</div></section>
- <div class="dashboard-bottom"><section class="panel panel-pad"><div class="card-heading"><h2>Próximas revisões</h2><span class="muted">${icon('tool')}</span></div>${services.map(s=>`<div class="service-mini"><div class="service-mini-head"><h3>${esc(s.name)}</h3>${tag(status(s))}</div><p>${status(s).detail}</p></div>`).join('')}<button class="btn quiet" style="margin-top:8px;font-size:13px" data-view="carro">Acompanhar meu carro ${icon('chevron')}</button></section></div>`;
+ <div class="dashboard-bottom"><section class="panel panel-pad"><div class="card-heading"><h2>Próximas Revisões</h2><span class="muted">${icon('tool')}</span></div>${services.map(s=>`<div class="service-mini"><div class="service-mini-head"><h3>${esc(s.name)}</h3>${tag(status(s))}</div><p>${status(s).detail}</p></div>`).join('')}<button class="btn quiet" style="margin-top:8px;font-size:13px" data-view="carro">Acompanhar meu carro ${icon('chevron')}</button></section></div>`;
 }
 const numberBR=n=>Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 /* R$ 10.120,00 não cabe no mesmo corpo que R$ 46,06: o tamanho cai por faixa
    de comprimento, senão o valor vaza para fora do card. */
 const valueSize=v=>{const n=String(v).length;return n>12?' vlong':n>9?' vmed':'';};
 function summaryCard(label,value,note='',color=''){return `<div class="panel summary-card"><p>${label}</p><strong class="mono ${color}${valueSize(value)}">${value}</strong>${note?`<small>${note}</small>`:''}</div>`;}
-function ridesPage(){const t=totals();return title('Cada corrida conta.','Seus ganhos, organizados em um só lugar.',button('Plataformas','platforms','plus','secondary')+button('Nova corrida','ride'))+`<div class="section-row"><span class="caption">Resumo de corridas</span>${periodButtons()}</div><div class="summary-grid centered">${summaryCard('Total recebido',money(t.revenue),'','positive')}${summaryCard('Corridas registradas',t.rides.length)}${summaryCard('Média por corrida',money(t.rides.length?t.revenue/t.rides.length:0))}</div><button class="btn secondary page-link" data-view="corridas-historico">${icon('calendar')}Histórico de corridas${icon('chevron')}</button><button class="btn secondary page-link" ${temPremium()?'data-view="corridas-comprovante"':'data-action="premiumAviso"'}>${icon('receipt')}Gerar comprovante${temPremium()?'':'<span class="page-note">Plano pago</span>'}${icon('chevron')}</button>`;}
+function ridesPage(){const t=totals();return title('Cada corrida conta.','Seus ganhos, organizados em um só lugar.',button('Plataformas','platforms','plus','secondary')+button('Nova corrida','ride'))+`<div class="section-row"><span class="caption">Resumo de corridas</span>${periodButtons()}</div><div class="summary-grid centered">${summaryCard('Total recebido',money(t.revenue),'','positive')}${summaryCard('Corridas registradas',t.rides.length)}${summaryCard('Média por corrida',money(t.rides.length?t.revenue/t.rides.length:0))}</div><button class="btn secondary page-link" data-view="corridas-historico">${icon('calendar')}Histórico de Corridas${icon('chevron')}</button><button class="btn secondary page-link" ${temPremium()?'data-view="corridas-comprovante"':'data-action="premiumAviso"'}>${icon('receipt')}Gerar Comprovante${temPremium()?'':'<span class="page-note">Plano pago</span>'}${icon('chevron')}</button>`;}
 const categories=['Combustível','Recarga elétrica','Alimentação','Manutenção','Estacionamento','Pedágio','Lavagem','Aluguel','Outros'];
-function financePage(){const t=totals(),fuel=t.expenses.filter(e=>e.category==='Combustível'||e.category==='Recarga elétrica').reduce((a,e)=>a+e.amount,0);return title('Seu dinheiro em ordem.','Entenda para onde vai o dinheiro do seu trabalho.',button('Adicionar gasto','expense'))+`<div class="section-row"><span class="caption accent">Resumo de gastos</span>${periodButtons()}</div><div class="summary-grid centered">${summaryCard('Gastos registrados',money(t.cost),'','negative')}${summaryCard(isElectric()?'Recarga elétrica':'Combustível e recarga',money(fuel))}${summaryCard('Gasto por km',t.km?money(t.cost/t.km):'—')}</div><button class="btn secondary page-link" data-view="financeiro-historico">${icon('calendar')}Histórico de gastos${icon('chevron')}</button><button class="btn secondary page-link" data-view="financeiro-relatorios">${icon('chart')}Relatórios${icon('chevron')}</button>`;}
-/* ===== Histórico de gastos =====
+function financePage(){const t=totals(),fuel=t.expenses.filter(e=>e.category==='Combustível'||e.category==='Recarga elétrica').reduce((a,e)=>a+e.amount,0);return title('Seu dinheiro em ordem.','Entenda para onde vai o dinheiro do seu trabalho.',button('Adicionar gasto','expense'))+`<div class="section-row"><span class="caption accent">Resumo de gastos</span>${periodButtons()}</div><div class="summary-grid centered">${summaryCard('Gastos registrados',money(t.cost),'','negative')}${summaryCard(isElectric()?'Recarga elétrica':'Combustível e recarga',money(fuel))}${summaryCard('Gasto por km',t.km?money(t.cost/t.km):'—')}</div><button class="btn secondary page-link" data-view="financeiro-historico">${icon('calendar')}Histórico de Gastos${icon('chevron')}</button><button class="btn secondary page-link" data-view="financeiro-relatorios">${icon('chart')}Relatórios${icon('chevron')}</button>`;}
+/* ===== Histórico de Gastos =====
    Tela própria, com um ano por vez e cada mês numa caixa que abre e fecha —
    assim uma lista longa não empurra o resto da tela de Gastos para baixo. */
 let historyYear=new Date().getFullYear(),historyOpen=null;
@@ -792,7 +792,7 @@ function expenseHistoryPage(){
  const meses=[...new Set(doAno.map(e=>Number(e.date.slice(5,7))-1))].sort((a,b)=>b-a);
  if(historyOpen===null)historyOpen=new Set(meses.length?[meses[0]]:[]);
  const total=doAno.reduce((a,e)=>a+e.amount,0);
- return title('Histórico de gastos','Escolha o ano e abra o mês que quiser conferir.')+
+ return title('Histórico de Gastos','Escolha o ano e abra o mês que quiser conferir.')+
  `<div class="list-toolbar history-bar"><h2 class="accent">Lançamentos</h2>${yearSelect('history-year',anos,historyYear)}<select id="expense-filter" aria-label="Filtrar gastos por categoria">${['Todas',...categories].map(x=>`<option ${expenseFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
  <div class="history-total"><span>Total no ano${expenseFilter==='Todas'?'':' · '+esc(expenseFilter)}</span><strong class="mono negative">${money(total)}</strong></div>
  ${meses.length?meses.map(m=>{
@@ -814,7 +814,7 @@ function escolherPlano(id){
    Plano, conta e suporte. O e-mail do suporte fica nesta constante: é uma linha
    só para trocar quando o endereço de verdade existir. */
 const SUPORTE_EMAIL='emaildolucroindrive@gmail.com';
-const PREMIUM=['Gerar comprovante, e o botão de comprovante no histórico de corridas','Consulta à Tabela FIPE','Sem anúncios'];
+const PREMIUM=['Gerar Comprovante, e o botão de comprovante no Histórico de Corridas','Consulta à Tabela FIPE','Sem anúncios'];
 const PLANOS=[
  ['gratis','Grátis','R$ 0','',['Corridas, gastos e jornadas','Painel de manutenção e manutenções avulsas','Histórico e relatórios']],
  ['mensal','Mensal','R$ 14,99','',['Tudo o que o Grátis tem',...PREMIUM]],
@@ -862,7 +862,7 @@ function supportPage(){
   <p class="body-text">Se for erro de catálogo, conte a marca, o modelo, o ano e a motorização — ajuda a corrigir para todo mundo.</p>
  </div>`;
 }
-/* ===== Histórico de corridas =====
+/* ===== Histórico de Corridas =====
    Mesmo molde do histórico de gastos: escolhe o ano, filtra pela plataforma e
    abre o mês. A diferença é o botão de comprovante em cada corrida. */
 let rideYear=new Date().getFullYear(),rideHistoryOpen=null;
@@ -879,7 +879,7 @@ function rideHistoryPage(){
  const meses=[...new Set(doAno.map(r=>Number(r.date.slice(5,7))-1))].sort((a,b)=>b-a);
  if(rideHistoryOpen===null)rideHistoryOpen=new Set(meses.length?[meses[0]]:[]);
  const total=doAno.reduce((a,r)=>a+r.amount,0);
- return title('Histórico de corridas','Escolha o ano e abra o mês que quiser conferir.')+
+ return title('Histórico de Corridas','Escolha o ano e abra o mês que quiser conferir.')+
  `<div class="list-toolbar history-bar"><h2 class="accent">Corridas</h2>${yearSelect('ride-year',anos,rideYear)}<select id="ride-filter" aria-label="Filtrar corridas por plataforma">${['Todas',...platformList()].map(x=>`<option ${rideFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
  <div class="history-total"><span>Total no ano${rideFilter==='Todas'?'':' · '+esc(rideFilter)}</span><strong class="mono positive">${money(total)}</strong></div>
  ${meses.length?meses.map(m=>{
@@ -890,7 +890,7 @@ function rideHistoryPage(){
    <span class="fold-total mono">${money(soma)}</span></button>
    ${aberto?`<div class="fold-body">${itens.map(r=>`<div class="fold-row"><span class="journey-ride">${platformLogo(r.platform)}<strong>${esc(r.platform)}</strong></span>
     <span class="row-day">${dayLabel(r.date)}</span>
-    <span class="ride-end"><span class="mono">${money(r.amount)}</span><button type="button" class="icon-btn ride-receipt" ${temPremium()?`data-ride-receipt="${esc(r.id)}"`:'data-action="premiumAviso"'} aria-label="Gerar comprovante da corrida de ${money(r.amount)} na ${esc(r.platform)} em ${prettyDate(r.date)}">${icon('receipt')}</button></span></div>`).join('')}</div>`:''}</div>`;
+    <span class="ride-end"><span class="mono">${money(r.amount)}</span><button type="button" class="icon-btn ride-receipt" ${temPremium()?`data-ride-receipt="${esc(r.id)}"`:'data-action="premiumAviso"'} aria-label="Gerar Comprovante da corrida de ${money(r.amount)} na ${esc(r.platform)} em ${prettyDate(r.date)}">${icon('receipt')}</button></span></div>`).join('')}</div>`:''}</div>`;
  }).join(''):`<p class="empty">Nenhuma corrida ${rideFilter==='Todas'?'':'na '+esc(rideFilter)+' '}em ${rideYear}.</p>`}`;
 }
 /* O comprovante já nasce com o valor e a data da corrida; o trajeto é o que
@@ -964,10 +964,10 @@ function readReceiptDraft(){
  ['car','from','to','amount','date'].forEach(k=>{if(d.has(k))receiptDraft[k]=String(d.get(k));});
 }
 function receiptPage(){
- if(!temPremium())return title('Gerar comprovante','Este recurso é dos planos Mensal e Anual.')+premiumBloco();
+ if(!temPremium())return title('Gerar Comprovante','Este recurso é dos planos Mensal e Anual.')+premiumBloco();
  if(!receiptDraft)receiptDraft=blankReceipt();
  const d=receiptDraft;
- return title('Gerar comprovante','Preencha os dados da corrida e envie o comprovante para o passageiro.')+
+ return title('Gerar Comprovante','Preencha os dados da corrida e envie o comprovante para o passageiro.')+
  `<button class="btn secondary page-link" data-view="corridas-comprovantes">${icon('receipt')}Comprovantes gerados${icon('chevron')}</button>
  <form id="receipt-form"><div class="form-grid">
  ${field('Carro','car','text',d.car,'required maxlength="60" placeholder="Ex.: Hyundai HB20 · ABC-1234"',true)}
@@ -979,7 +979,7 @@ function receiptPage(){
  <p class="caption accent" style="margin:22px 0 9px">Como o passageiro vai receber</p>
  <pre class="receipt-preview" id="receipt-preview">${esc(receiptText(d))}</pre>
  <p class="form-error" id="form-error" role="alert"></p>
- <div class="form-actions"><button type="submit" class="btn primary">${icon('receipt')}Gerar comprovante</button></div></form>`;
+ <div class="form-actions"><button type="submit" class="btn primary">${icon('receipt')}Gerar Comprovante</button></div></form>`;
 }
 /* O mesmo bloco serve ao comprovante e à FIPE: diz o que falta e leva aos planos. */
 function premiumBloco(){
@@ -1273,7 +1273,7 @@ function carPage(){
   v?'':button('Cadastrar carro','addVehicle'));
  return head+(v?vehicleHero(v):'')+
  `<button class="btn secondary page-link" data-view="carro-manutencao">${icon('tool')}Painel de Manutenção${icon('chevron')}</button>`+
- `<button class="btn secondary page-link" data-view="carro-manutencoes">${icon('plus')}Adicionar manutenção${icon('chevron')}</button>`+
+ `<button class="btn secondary page-link" data-view="carro-manutencoes">${icon('plus')}Adicionar Manutenção${icon('chevron')}</button>`+
  `<div class="car-grid">${fipeCard()}</div>`;
 }
 function maintenancePage(){
@@ -1292,7 +1292,7 @@ function maintenanceLogPage(){
  if(maintenanceMonthsOpen===null)maintenanceMonthsOpen=new Set(meses.length?[meses[0]]:[]);
  if(maintenanceOpen===null)maintenanceOpen=new Set(lista.length?[lista[0].id]:[]);
  const total=lista.reduce((a,m)=>a+m.amount,0);
- return title('Adicionar manutenção','Anote o que foi feito, quanto custou e com quantos km.')+
+ return title('Adicionar Manutenção','Anote o que foi feito, quanto custou e com quantos km.')+
  `<form id="maintenance-form"><div class="form-grid">
  ${field('O que foi feito','description','text','','required maxlength="100" placeholder="Ex.: Troca da pastilha de freio"',true)}
  ${field('Valor (R$)','amount','number','','required min="0.01" max="999999" step="0.01" inputmode="decimal" placeholder="0,00"')}

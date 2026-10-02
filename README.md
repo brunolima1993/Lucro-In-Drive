@@ -31,9 +31,9 @@ Ela é um índice de três botões, cada um levando à sua tela, no mesmo molde 
 atalhos dos outros módulos:
 
 - **Escolha seu plano**: Grátis, Mensal (R$ 14,99) e Anual (R$ 99,99), com o
-  atual marcado e também escrito ao lado do botão, no índice. A prévia **não cobra nada**: a escolha fica no `localStorage`,
-  e a tela diz isso. O que o plano pago inclui ainda não está escrito — entra
-  aqui quando for definido;
+  atual marcado e também escrito ao lado do botão, no índice. Cada cartão lista
+  o que inclui. A prévia **não cobra nada**: não há pagamento ligado e a escolha
+  fica no `localStorage`, o que a tela diz;
 - **Conta e dados**: o e-mail com que a pessoa entrou (ou "Conta de
   demonstração", para quem usou o acesso direto), sair da conta e excluir a
   conta. A exclusão pede confirmação e, nesta prévia, apaga o que está no
@@ -41,6 +41,19 @@ atalhos dos outros módulos:
   ainda não há nuvem;
 - **Falar com o suporte**: o endereço fica na constante `SUPORTE_EMAIL`, uma
   linha só para trocar quando o e-mail de verdade existir.
+
+### O que o plano pago libera
+
+Três coisas: **gerar comprovante** (o atalho em Corridas e o botão de
+comprovante em cada linha do histórico de corridas), a **consulta à Tabela
+FIPE** e **sem anúncios** — este último ainda não tem o que implementar, porque
+o app não tem anúncios.
+
+No plano Grátis os dois caminhos continuam à vista, em vez de sumirem: o atalho
+do comprovante leva ao aviso do plano, o ícone no histórico também, e a caixa da
+FIPE mostra o que o plano pago inclui com o botão para os planos. Esconder os
+recursos faria eles desaparecerem sem explicação. Entrar pelo endereço
+`#corridas-comprovante` no Grátis também não abre o formulário.
 
 ## Ícone
 

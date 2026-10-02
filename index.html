@@ -249,6 +249,9 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .plan-price{font-size:24px;font-weight:650;line-height:1.15}
 .plan-card small{font-size:12px;color:var(--muted)}
 .plan-extra{color:var(--lime)}
+.plan-itens{display:grid;gap:5px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
+.plan-itens span{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;color:var(--muted);line-height:1.4}
+.plan-itens svg{width:14px;height:14px;flex-shrink:0;margin-top:2px;color:var(--lime);stroke-width:2.6}
 .plan-note{margin:11px 0 0}
 .config-box{display:grid;gap:2px}
 .config-email{font-size:16px;overflow-wrap:anywhere}
@@ -762,7 +765,7 @@ const numberBR=n=>Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maxi
    de comprimento, senão o valor vaza para fora do card. */
 const valueSize=v=>{const n=String(v).length;return n>12?' vlong':n>9?' vmed':'';};
 function summaryCard(label,value,note='',color=''){return `<div class="panel summary-card"><p>${label}</p><strong class="mono ${color}${valueSize(value)}">${value}</strong>${note?`<small>${note}</small>`:''}</div>`;}
-function ridesPage(){const t=totals();return title('Cada corrida conta.','Seus ganhos, organizados em um só lugar.',button('Plataformas','platforms','plus','secondary')+button('Nova corrida','ride'))+`<div class="section-row"><span class="caption">Resumo de corridas</span>${periodButtons()}</div><div class="summary-grid centered">${summaryCard('Total recebido',money(t.revenue),'','positive')}${summaryCard('Corridas registradas',t.rides.length)}${summaryCard('Média por corrida',money(t.rides.length?t.revenue/t.rides.length:0))}</div><button class="btn secondary page-link" data-view="corridas-historico">${icon('calendar')}Histórico de corridas${icon('chevron')}</button><button class="btn secondary page-link" data-view="corridas-comprovante">${icon('receipt')}Gerar comprovante${icon('chevron')}</button>`;}
+function ridesPage(){const t=totals();return title('Cada corrida conta.','Seus ganhos, organizados em um só lugar.',button('Plataformas','platforms','plus','secondary')+button('Nova corrida','ride'))+`<div class="section-row"><span class="caption">Resumo de corridas</span>${periodButtons()}</div><div class="summary-grid centered">${summaryCard('Total recebido',money(t.revenue),'','positive')}${summaryCard('Corridas registradas',t.rides.length)}${summaryCard('Média por corrida',money(t.rides.length?t.revenue/t.rides.length:0))}</div><button class="btn secondary page-link" data-view="corridas-historico">${icon('calendar')}Histórico de corridas${icon('chevron')}</button><button class="btn secondary page-link" ${temPremium()?'data-view="corridas-comprovante"':'data-action="premiumAviso"'}>${icon('receipt')}Gerar comprovante${temPremium()?'':'<span class="page-note">Plano pago</span>'}${icon('chevron')}</button>`;}
 const categories=['Combustível','Recarga elétrica','Alimentação','Manutenção','Estacionamento','Pedágio','Lavagem','Aluguel','Outros'];
 function financePage(){const t=totals(),fuel=t.expenses.filter(e=>e.category==='Combustível'||e.category==='Recarga elétrica').reduce((a,e)=>a+e.amount,0);return title('Seu dinheiro em ordem.','Entenda para onde vai o dinheiro do seu trabalho.',button('Adicionar gasto','expense'))+`<div class="section-row"><span class="caption accent">Resumo de gastos</span>${periodButtons()}</div><div class="summary-grid centered">${summaryCard('Gastos registrados',money(t.cost),'','negative')}${summaryCard(isElectric()?'Recarga elétrica':'Combustível e recarga',money(fuel))}${summaryCard('Gasto por km',t.km?money(t.cost/t.km):'—')}</div><button class="btn secondary page-link" data-view="financeiro-historico">${icon('calendar')}Histórico de gastos${icon('chevron')}</button><button class="btn secondary page-link" data-view="financeiro-relatorios">${icon('chart')}Relatórios${icon('chevron')}</button>`;}
 /* ===== Histórico de gastos =====
@@ -808,11 +811,16 @@ function escolherPlano(id){
    Plano, conta e suporte. O e-mail do suporte fica nesta constante: é uma linha
    só para trocar quando o endereço de verdade existir. */
 const SUPORTE_EMAIL='emaildolucroindrive@gmail.com';
+const PREMIUM=['Gerar comprovante, e o botão de comprovante no histórico de corridas','Consulta à Tabela FIPE','Sem anúncios'];
 const PLANOS=[
- ['gratis','Grátis','R$ 0','Tudo o que você usa hoje: corridas, gastos, jornadas, comprovantes e o painel de manutenção.',''],
- ['mensal','Mensal','R$ 14,99','por mês',''],
- ['anual','Anual','R$ 99,99','por ano','Economize R$ 79,89 em relação a doze meses do plano mensal.']
+ ['gratis','Grátis','R$ 0','para sempre','',['Corridas, gastos e jornadas','Painel de manutenção e manutenções avulsas','Histórico e relatórios']],
+ ['mensal','Mensal','R$ 14,99','por mês','',['Tudo o que o Grátis tem',...PREMIUM]],
+ ['anual','Anual','R$ 99,99','por ano','Economize R$ 79,89 em relação a doze meses do plano mensal.',['Tudo o que o Grátis tem',...PREMIUM]]
 ];
+/* O premium libera o comprovante e a FIPE. Quem está no Grátis continua vendo
+   os dois caminhos — escondê-los faria o recurso sumir sem explicação —, só que
+   eles levam aos planos em vez de abrir. */
+const temPremium=()=>state.plan!=='gratis';
 function settingsPage(){
  const atual=(PLANOS.find(([id])=>id===state.plan)||PLANOS[0])[1];
  const conta=state.account&&state.account.email;
@@ -823,15 +831,16 @@ function settingsPage(){
 }
 function planPage(){
  return title('Escolha seu plano','O plano marcado é o que está em uso.')+
- `<div class="plan-list">${PLANOS.map(([id,nome,preco,periodo,extra])=>{
+ `<div class="plan-list">${PLANOS.map(([id,nome,preco,periodo,extra,itens])=>{
   const atual=state.plan===id;
   return `<button type="button" class="panel plan-card ${atual?'atual':''}" data-plan="${id}" aria-pressed="${atual}">
    <span class="plan-top"><strong>${nome}</strong>${atual?'<span class="tag ok">Seu plano</span>':''}</span>
    <span class="plan-price mono">${preco}</span>
    <small>${periodo}</small>
-   ${extra?`<small class="plan-extra">${extra}</small>`:''}</button>`;
+   ${extra?`<small class="plan-extra">${extra}</small>`:''}
+   <span class="plan-itens">${itens.map(x=>`<span>${icon('check')}${esc(x)}</span>`).join('')}</span></button>`;
  }).join('')}</div>
- <p class="small muted center-text plan-note">Esta prévia não cobra nada: a escolha fica salva só neste navegador. O que o plano pago inclui entra aqui quando você definir.</p>`;
+ <p class="small muted center-text plan-note">Esta prévia não cobra nada: não há pagamento ligado, e a escolha fica salva só neste navegador.</p>`;
 }
 function accountPage(){
  const conta=state.account&&state.account.email;
@@ -879,7 +888,7 @@ function rideHistoryPage(){
    <span class="fold-total mono">${money(soma)}</span></button>
    ${aberto?`<div class="fold-body">${itens.map(r=>`<div class="fold-row"><span class="journey-ride">${platformLogo(r.platform)}<strong>${esc(r.platform)}</strong></span>
     <span class="row-day">${dayLabel(r.date)}</span>
-    <span class="ride-end"><span class="mono">${money(r.amount)}</span><button type="button" class="icon-btn ride-receipt" data-ride-receipt="${esc(r.id)}" aria-label="Gerar comprovante da corrida de ${money(r.amount)} na ${esc(r.platform)} em ${prettyDate(r.date)}">${icon('receipt')}</button></span></div>`).join('')}</div>`:''}</div>`;
+    <span class="ride-end"><span class="mono">${money(r.amount)}</span><button type="button" class="icon-btn ride-receipt" ${temPremium()?`data-ride-receipt="${esc(r.id)}"`:'data-action="premiumAviso"'} aria-label="Gerar comprovante da corrida de ${money(r.amount)} na ${esc(r.platform)} em ${prettyDate(r.date)}">${icon('receipt')}</button></span></div>`).join('')}</div>`:''}</div>`;
  }).join(''):`<p class="empty">Nenhuma corrida ${rideFilter==='Todas'?'':'na '+esc(rideFilter)+' '}em ${rideYear}.</p>`}`;
 }
 /* O comprovante já nasce com o valor e a data da corrida; o trajeto é o que
@@ -953,6 +962,7 @@ function readReceiptDraft(){
  ['car','from','to','amount','date'].forEach(k=>{if(d.has(k))receiptDraft[k]=String(d.get(k));});
 }
 function receiptPage(){
+ if(!temPremium())return title('Gerar comprovante','Este recurso é dos planos Mensal e Anual.')+premiumBloco();
  if(!receiptDraft)receiptDraft=blankReceipt();
  const d=receiptDraft;
  return title('Gerar comprovante','Preencha os dados da corrida e envie o comprovante para o passageiro.')+
@@ -968,6 +978,10 @@ function receiptPage(){
  <pre class="receipt-preview" id="receipt-preview">${esc(receiptText(d))}</pre>
  <p class="form-error" id="form-error" role="alert"></p>
  <div class="form-actions"><button type="submit" class="btn primary">${icon('receipt')}Gerar comprovante</button></div></form>`;
+}
+/* O mesmo bloco serve ao comprovante e à FIPE: diz o que falta e leva aos planos. */
+function premiumBloco(){
+ return `<div class="panel panel-pad config-box center-text"><p class="body-text">No plano pago você gera comprovantes para o passageiro, consulta a Tabela FIPE e fica sem anúncios.</p>${button('Ver os planos','verPlanos','bolt')}</div>`;
 }
 function receiptsPage(){
  const todos=[...state.receipts].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id));
@@ -1604,7 +1618,10 @@ let fipeOpen=true;
 function fipeCard(){
  const v=state.vehicle,f=v&&v.fipe;
  let topo,body,badge='';
- if(!v){
+ if(!temPremium()){
+  topo='<p class="eyebrow">RECURSO DO PLANO PAGO</p>';
+  body=premiumBloco();
+ }else if(!v){
   topo='<p class="eyebrow">PRECISA DO CARRO CADASTRADO</p>';
   body=`<p class="body-text">A Tabela FIPE localiza o veículo pela marca, pelo modelo e pelo ano. Cadastre o carro para consultar o valor de referência.</p>${button('Cadastrar carro','addVehicle')}`;
  }else if(fipeState.status==='loading'){
@@ -1684,6 +1701,8 @@ platforms:showPlatforms,addVehicle:()=>showVehicle(false),editVehicle:()=>showVe
 removeVehicle:()=>openDialog('Remover o carro?',`<p class="dialog-intro">O cadastro do carro e a cotação salva da FIPE saem deste navegador. Corridas, gastos e jornadas continuam como estão.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn danger" data-action="confirmRemoveVehicle">Remover carro</button></div>`),
 confirmRemoveVehicle:()=>{state.vehicle=null;resetFipeState();save();closeDialog();render();toast('Carro removido. Você pode cadastrar de novo quando quiser.');},
 dismissNudge:()=>{state.vehicleNudge='off';save();render();},
+premiumAviso:()=>openDialog('Recurso do plano pago',`<p class="dialog-intro">O comprovante de corrida e a consulta à Tabela FIPE fazem parte dos planos Mensal e Anual. O plano pago também tira os anúncios.</p><div class="form-actions"><button class="btn secondary" data-action="close">Agora não</button><button class="btn primary" data-action="verPlanos">Ver os planos</button></div>`),
+verPlanos:()=>{closeDialog();go('config-plano');},
 askDeleteAccount:()=>openDialog('Excluir a conta?',`<p class="dialog-intro">A conta, os veículos e todo o histórico salvo na nuvem serão excluídos definitivamente. Não será possível recuperar depois.</p><div class="msgbox warn">Nesta prévia ainda não há nuvem: o que sai é tudo o que está guardado neste navegador.</div><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn danger" data-action="deleteAccount">Excluir a conta</button></div>`),
 deleteAccount:()=>{try{localStorage.removeItem(KEY);localStorage.removeItem(CONSENT_KEY);}catch{}state=seed();consentRecord=null;state.account=null;save();closeDialog();demoSignedIn=false;consentPending=false;render();$('main').scrollTo({top:0});toast('Conta excluída. Os dados deste navegador foram apagados.');},toggleFipe:()=>{fipeOpen=!fipeOpen;render();},back:()=>{const sub=SUBVIEWS[view];go(sub?(sub.back||sub.parent):'inicio');},removeReceipt:()=>{state.receipts=state.receipts.filter(r=>r.id!==receiptToRemove);if(receiptsOpen)receiptsOpen.delete(receiptToRemove);receiptToRemove=null;save();closeDialog();render();toast('Comprovante excluído.');},
 removeMaintenance:()=>{const id=maintenanceToRemove;if(!id)return;state.maintenance=(state.maintenance||[]).filter(m=>m.id!==id);state.expenses=state.expenses.filter(e=>e.maintenanceId!==id);if(maintenanceOpen)maintenanceOpen.delete(id);maintenanceMonthsOpen=null;historyOpen=null;maintenanceToRemove=null;save();closeDialog();render();toast('Manutenção excluída. O gasto saiu junto.');},

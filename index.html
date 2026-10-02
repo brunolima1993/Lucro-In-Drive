@@ -201,20 +201,8 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .summary-grid .summary-card:not(:first-child){padding-left:12px;padding-right:12px}
 .summary-grid .summary-card:first-child strong.vmed{font-size:30px}
 .summary-grid .summary-card:first-child strong.vlong{font-size:26px}
-/* Com duas colunas, a tabela esticada deixava um vão grande entre a plataforma
-   e o valor. O recuo lateral maior aproxima os dois sem tirar a tabela da
-   largura do box — as linhas divisórias continuam de ponta a ponta, e o valor
-   segue à direita da sua coluna, então os valores batem um embaixo do outro. */
-.table-wrap.slim th,.table-wrap.slim td{padding:10px clamp(10px,5vw,36px)}.table-wrap.slim td .platform-logo{width:30px;height:30px;font-size:14px;border-radius:9px}
-.table-wrap.slim td:last-child,.table-wrap.slim th:last-child{white-space:nowrap}
 .page-title.centered{justify-content:center}
 .page-title.centered>div:first-child{width:100%;text-align:center}
-.table-wrap.slim table{min-width:0;table-layout:fixed}
-.table-wrap.slim th:last-child,.table-wrap.slim td:last-child{width:9em}
-/* sem rolagem lateral: o que não couber quebra a linha */
-.table-wrap.slim{overflow-x:hidden}
-.table-wrap.slim td:first-child{overflow-wrap:break-word}
-.table-wrap.slim .platform-cell{min-width:0}
 /* O nome da plataforma é um rótulo: uma linha sempre. Se faltar espaço, corta
    com reticências em vez de partir a palavra ao meio. */
 .platform-cell strong,.ride-info strong,.journey-ride strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -245,6 +233,10 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .fold-toggle,.fold-toggle:hover{color:var(--lime)}
 .fold-name strong .tag{margin-left:8px;vertical-align:middle;text-transform:none}
 .journey-ride{display:flex;align-items:center;gap:11px;min-width:0}
+.ride-end{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ride-receipt{width:36px;height:36px;min-height:36px;color:var(--muted)}
+.ride-receipt:hover,.ride-receipt:focus-visible{color:var(--lime);background:var(--raised)}
+.fold-body .fold-row:has(.ride-end){padding:9px 0}
 .receipt-preview{margin:0;padding:16px;border:1px solid var(--border);border-radius:14px;background:#0f130f;color:var(--text);font-family:inherit;font-size:13.5px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;text-align:left}
 .fold-body>.fold-box{margin:10px 0;border-radius:13px;background:var(--raised)}
 .fold-body>.fold-box:first-child{margin-top:12px}
@@ -383,6 +375,7 @@ let view='inicio',period='today',rideFilter='Todas',expenseFilter='Todas',toastT
 const navigation=[['inicio','Início','grid'],['corridas','Corridas','route'],['financeiro','Financeiro','money'],['carro','Meu carro','wheel']];
 /* telas que não ficam na barra de baixo: abrem a partir da tela-mãe */
 const SUBVIEWS={'corridas-jornadas':{label:'Jornadas',parent:'corridas'},
+ 'corridas-historico':{label:'Histórico de corridas',parent:'corridas'},
  'carro-manutencao':{label:'Painel de Manutenção',parent:'carro'},
  'carro-manutencoes':{label:'Adicionar manutenção',parent:'carro'},
  'corridas-comprovante':{label:'Gerar comprovante',parent:'corridas'},
@@ -500,7 +493,7 @@ const numberBR=n=>Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maxi
    de comprimento, senão o valor vaza para fora do card. */
 const valueSize=v=>{const n=String(v).length;return n>12?' vlong':n>9?' vmed':'';};
 function summaryCard(label,value,note='',color=''){return `<div class="panel summary-card"><p>${label}</p><strong class="mono ${color}${valueSize(value)}">${value}</strong>${note?`<small>${note}</small>`:''}</div>`;}
-function ridesPage(){const t=totals(),rows=t.rides.filter(r=>rideFilter==='Todas'||r.platform===rideFilter).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));return title('Cada corrida conta.','Seus ganhos, organizados em um só lugar.',button('Plataformas','platforms','plus','secondary')+button('Nova corrida','ride'))+`<div class="section-row"><span class="caption">Resumo de corridas</span>${periodButtons()}</div><div class="summary-grid centered">${summaryCard('Total recebido',money(t.revenue),'','positive')}${summaryCard('Corridas registradas',t.rides.length)}${summaryCard('Média por corrida',money(t.rides.length?t.revenue/t.rides.length:0))}</div><button class="btn secondary page-link" data-view="corridas-jornadas">${icon('clock')}Jornadas${icon('chevron')}</button><button class="btn secondary page-link" data-view="corridas-comprovante">${icon('receipt')}Gerar comprovante${icon('chevron')}</button><div class="list-toolbar"><h2 class="accent">Histórico de corridas</h2><select id="ride-filter" aria-label="Filtrar corridas por plataforma">${['Todas',...platformList()].map(x=>`<option ${rideFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div><div class="table-wrap slim"><table><thead><tr><th>Plataforma</th><th>Recebido</th></tr></thead><tbody>${rows.map(r=>`<tr><td><div class="platform-cell">${platformLogo(r.platform)}<strong>${esc(r.platform)}</strong></div></td><td class="mono"><strong>${money(r.amount)}</strong></td></tr>`).join('')||'<tr><td colspan="2" class="empty">Nenhuma corrida com este filtro.</td></tr>'}</tbody></table></div>`;}
+function ridesPage(){const t=totals();return title('Cada corrida conta.','Seus ganhos, organizados em um só lugar.',button('Plataformas','platforms','plus','secondary')+button('Nova corrida','ride'))+`<div class="section-row"><span class="caption">Resumo de corridas</span>${periodButtons()}</div><div class="summary-grid centered">${summaryCard('Total recebido',money(t.revenue),'','positive')}${summaryCard('Corridas registradas',t.rides.length)}${summaryCard('Média por corrida',money(t.rides.length?t.revenue/t.rides.length:0))}</div><button class="btn secondary page-link" data-view="corridas-historico">${icon('calendar')}Histórico de corridas${icon('chevron')}</button><button class="btn secondary page-link" data-view="corridas-jornadas">${icon('clock')}Jornadas${icon('chevron')}</button><button class="btn secondary page-link" data-view="corridas-comprovante">${icon('receipt')}Gerar comprovante${icon('chevron')}</button>`;}
 const categories=['Combustível','Recarga elétrica','Alimentação','Manutenção','Estacionamento','Pedágio','Lavagem','Aluguel','Outros'];
 function financePage(){const t=totals(),fuel=t.expenses.filter(e=>e.category==='Combustível'||e.category==='Recarga elétrica').reduce((a,e)=>a+e.amount,0);return title('Seu dinheiro em ordem.','Entenda para onde vai o dinheiro do seu trabalho.',button('Adicionar gasto','expense'))+`<div class="section-row"><span class="caption accent">Resumo de gastos</span>${periodButtons()}</div><div class="summary-grid centered">${summaryCard('Gastos registrados',money(t.cost),'','negative')}${summaryCard(isElectric()?'Recarga elétrica':'Combustível e recarga',money(fuel))}${summaryCard('Gasto por km',t.km?money(t.cost/t.km):'—')}</div><button class="btn secondary page-link" data-view="financeiro-historico">${icon('calendar')}Histórico de gastos${icon('chevron')}</button><button class="btn secondary page-link" data-view="financeiro-relatorios">${icon('chart')}Relatórios${icon('chevron')}</button>`;}
 /* ===== Histórico de gastos =====
@@ -535,6 +528,45 @@ function expenseHistoryPage(){
    <span class="fold-total mono">${money(soma)}</span></button>
    ${aberto?`<div class="fold-body">${itens.map(e=>`<div class="fold-row"><strong>${esc(e.description||e.category)}</strong><span class="mono">${money(e.amount)}</span></div>`).join('')}</div>`:''}</div>`;
  }).join(''):`<p class="empty">Nenhum gasto ${expenseFilter==='Todas'?'':'de '+esc(expenseFilter)+' '}em ${historyYear}.</p>`}`;
+}
+/* ===== Histórico de corridas =====
+   Mesmo molde do histórico de gastos: escolhe o ano, filtra pela plataforma e
+   abre o mês. A diferença é o botão de comprovante em cada corrida. */
+let rideYear=new Date().getFullYear(),rideHistoryOpen=null;
+function toggleRideMonth(m){
+ if(rideHistoryOpen===null)rideHistoryOpen=new Set();
+ rideHistoryOpen.has(m)?rideHistoryOpen.delete(m):rideHistoryOpen.add(m);
+ render();
+}
+function rideHistoryPage(){
+ const anos=yearsOf(state.rides.map(r=>r.date));
+ if(!anos.includes(rideYear))rideYear=anos[0];
+ const doAno=state.rides.filter(r=>Number(r.date.slice(0,4))===rideYear&&(rideFilter==='Todas'||r.platform===rideFilter))
+  .sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+ const meses=[...new Set(doAno.map(r=>Number(r.date.slice(5,7))-1))].sort((a,b)=>b-a);
+ if(rideHistoryOpen===null)rideHistoryOpen=new Set(meses.length?[meses[0]]:[]);
+ const total=doAno.reduce((a,r)=>a+r.amount,0);
+ return title('Histórico de corridas','Escolha o ano e abra o mês que quiser conferir.')+
+ `<div class="list-toolbar centered"><h2 class="accent">Corridas</h2><div class="toolbar-filters">${yearSelect('ride-year',anos,rideYear)}<select id="ride-filter" aria-label="Filtrar corridas por plataforma">${['Todas',...platformList()].map(x=>`<option ${rideFilter===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div>
+ <div class="history-total"><span>Total no ano${rideFilter==='Todas'?'':' · '+esc(rideFilter)}</span><strong class="mono positive">${money(total)}</strong></div>
+ ${meses.length?meses.map(m=>{
+  const itens=doAno.filter(r=>Number(r.date.slice(5,7))-1===m),soma=itens.reduce((a,r)=>a+r.amount,0),aberto=rideHistoryOpen.has(m);
+  return `<div class="fold-box ${aberto?'open':''}"><button type="button" class="fold-head" data-ride-month="${m}" aria-expanded="${aberto}">
+   <span class="fold-chevron">${icon('chevron')}</span>
+   <span class="fold-name"><strong>${monthName(rideYear,m)}</strong><small>${itens.length} ${itens.length===1?'corrida':'corridas'}</small></span>
+   <span class="fold-total mono">${money(soma)}</span></button>
+   ${aberto?`<div class="fold-body">${itens.map(r=>`<div class="fold-row"><span class="journey-ride">${platformLogo(r.platform)}<strong>${esc(r.platform)}</strong></span>
+    <span class="ride-end"><span class="mono">${money(r.amount)}</span><button type="button" class="icon-btn ride-receipt" data-ride-receipt="${esc(r.id)}" aria-label="Gerar comprovante da corrida de ${money(r.amount)} na ${esc(r.platform)}">${icon('receipt')}</button></span></div>`).join('')}</div>`:''}</div>`;
+ }).join(''):`<p class="empty">Nenhuma corrida ${rideFilter==='Todas'?'':'na '+esc(rideFilter)+' '}em ${rideYear}.</p>`}`;
+}
+/* O comprovante já nasce com o valor e a data da corrida; o trajeto é o que
+   só o motorista sabe. */
+function receiptFromRide(id){
+ const r=state.rides.find(x=>x.id===id);
+ if(!r)return;
+ receiptDraft={...blankReceipt(),amount:String(r.amount),date:r.date};
+ go('corridas-comprovante');
+ toast('Valor e data da corrida preenchidos. Falta o trajeto.');
 }
 /* ===== Jornadas =====
    Um dia de trabalho por caixa, com as corridas registradas nele. */
@@ -722,7 +754,7 @@ $('app-shell').classList.toggle('terms-mode',needsConsent);
 if(!demoSignedIn){if(location.hash!=='#login')history.replaceState(null,'','#login');$('view').innerHTML=loginScreen();document.title='LucroInDrive — Login';return;}
 if(needsConsent){if(location.hash!=='#termos')history.replaceState(null,'','#termos');$('view').innerHTML=termsScreen();document.title='LucroInDrive — Antes de começar';return;}
 if(location.hash==='#termos'||location.hash==='#login')history.replaceState(null,'','#inicio');
-const route=location.hash.slice(1);view=navigation.some(n=>n[0]===route)||SUBVIEWS[route]?route:'inicio';const sub=SUBVIEWS[view],navView=sub?sub.parent:view,pageName=sub?sub.label:navigation.find(n=>n[0]===view)[1];$('desktop-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}${l}</button>`).join('');$('mobile-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}<span>${l}</span></button>`).join('');$('breadcrumb-name').textContent=pageName;$('topbar-back').hidden=!sub;$('side-car-name').textContent=state.vehicle?[vehicleName(state.vehicle),state.vehicle.year].filter(Boolean).join(' · '):'Nenhum carro cadastrado';$('side-km').textContent=number(state.km)+' km registrados';$('header-date').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});$('view').innerHTML=({inicio:home,corridas:ridesPage,financeiro:financePage,carro:carPage,'corridas-jornadas':journeysPage,'carro-manutencao':maintenancePage,'carro-manutencoes':maintenanceLogPage,'corridas-comprovante':receiptPage,'corridas-comprovantes':receiptsPage,'financeiro-historico':expenseHistoryPage,'financeiro-relatorios':reportsPage})[view]();document.title='LucroInDrive — '+pageName;updateStorageNote();}
+const route=location.hash.slice(1);view=navigation.some(n=>n[0]===route)||SUBVIEWS[route]?route:'inicio';const sub=SUBVIEWS[view],navView=sub?sub.parent:view,pageName=sub?sub.label:navigation.find(n=>n[0]===view)[1];$('desktop-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}${l}</button>`).join('');$('mobile-nav').innerHTML=navigation.map(([v,l,i])=>`<button data-view="${v}" class="${navView===v?'active':''}" ${navView===v?'aria-current="page"':''}>${icon(i)}<span>${l}</span></button>`).join('');$('breadcrumb-name').textContent=pageName;$('topbar-back').hidden=!sub;$('side-car-name').textContent=state.vehicle?[vehicleName(state.vehicle),state.vehicle.year].filter(Boolean).join(' · '):'Nenhum carro cadastrado';$('side-km').textContent=number(state.km)+' km registrados';$('header-date').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});$('view').innerHTML=({inicio:home,corridas:ridesPage,financeiro:financePage,carro:carPage,'corridas-jornadas':journeysPage,'corridas-historico':rideHistoryPage,'carro-manutencao':maintenancePage,'carro-manutencoes':maintenanceLogPage,'corridas-comprovante':receiptPage,'corridas-comprovantes':receiptsPage,'financeiro-historico':expenseHistoryPage,'financeiro-relatorios':reportsPage})[view]();document.title='LucroInDrive — '+pageName;updateStorageNote();}
 function go(v){if(location.hash==='#'+v){render();return;}location.hash=v;}
 window.addEventListener('hashchange',()=>{render();$('main').scrollTo({top:0,behavior:'instant'});});
 function toast(msg){clearTimeout(toastTimer);$('toast').textContent=msg;$('toast').classList.remove('hidden');toastTimer=setTimeout(()=>$('toast').classList.add('hidden'),4200);}
@@ -1316,8 +1348,8 @@ fipeManual:()=>{
  openDialog('Anotar o valor da FIPE',form('fipe-manual-form','Consultou no site da FIPE? Anote aqui o valor que apareceu. Ele fica salvo apenas neste navegador.',field('Valor (R$)','value','number',atual,'required min="0.01" max="9999999" step="0.01" inputmode="decimal" placeholder="0,00"')+field('Ano do modelo','modelYear','number',v.year||'',`min="1950" max="${maxYear()}" step="1" inputmode="numeric"`)+`<p class="small muted" style="grid-column:1/-1">A consulta oficial fica em <a href="${FIPE_SITE}" target="_blank" rel="noopener noreferrer">veiculos.fipe.org.br</a>.</p>`,'Salvar valor'));
 },
 about:()=>openDialog('Bem-vindo ao LucroInDrive',`<span class="tag ok">Primeiro esboço</span><p class="body-text" style="margin-top:20px">Explore corridas, gastos, jornada, metas e manutenção com dados de exemplo. Os lançamentos alteram os resumos e ficam salvos apenas neste navegador.</p><ul><li>O login é demonstrativo; não há autenticação ou backup online.</li><li>A cotação da FIPE é consultada de verdade, em uma API pública, depois que você cadastra o carro.</li><li>Este app é independente do TMyCar.</li></ul><p class="body-text">Para começar novamente, use “Restaurar demonstração”.</p><button class="btn primary" style="width:100%;margin-top:15px" data-action="close">Explorar o app</button><button class="btn secondary" style="width:100%;margin-top:10px" data-action="logout">Voltar ao login</button>`),reset:()=>openDialog('Restaurar demonstração?',`<p class="dialog-intro">Os lançamentos feitos neste esboço serão removidos deste navegador. Os dados de exemplo serão recriados.</p><div class="form-actions"><button class="btn secondary" data-action="close">Cancelar</button><button class="btn primary" data-action="confirmReset">Restaurar</button></div>`),confirmReset:()=>{state=seed();period='today';rideFilter='Todas';expenseFilter='Todas';vehicleDraft=null;resetFipeState();save();closeDialog();render();toast('Demonstração restaurada.');}};
-document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.maintenanceMonth)toggleMaintenanceMonth(el.dataset.maintenanceMonth);if(el.dataset.maintenance)toggleMaintenance(el.dataset.maintenance);if(el.dataset.maintenanceRemove)askRemoveMaintenance(el.dataset.maintenanceRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
-document.addEventListener('change',e=>{if(e.target.id==='consent-confirm'){consentPending=e.target.checked;$('consent-enter').disabled=!consentPending;$('consent-status').textContent=consentPending?'Tudo pronto para continuar.':'Confirme sua idade e o aceite para continuar.';}if(e.target.id==='ride-filter'){rideFilter=e.target.value;render();}if(e.target.id==='history-year'){historyYear=Number(e.target.value);historyOpen=null;render();}if(e.target.id==='journey-year'){journeyYear=Number(e.target.value);journeyMonthsOpen=null;journeysOpen=null;render();}if(e.target.id==='maintenance-year'){maintenanceYear=Number(e.target.value);maintenanceMonthsOpen=null;maintenanceOpen=null;render();}if(e.target.id==='expense-filter'){expenseFilter=e.target.value;historyOpen=null;render();}if(vehicleDraft&&e.target.form&&e.target.form.id==='vehicle-form'&&['brand','model','versionIdx','fuel'].includes(e.target.name)){readVehicleDraft();syncVehicleDraft(e.target.name);repaintVehicleForm(e.target.name);}});
+document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.view)go(el.dataset.view);if(el.dataset.period){period=el.dataset.period;render();}if(el.dataset.service)showService(el.dataset.service);if(el.dataset.month!==undefined)toggleHistoryMonth(Number(el.dataset.month));if(el.dataset.rideMonth!==undefined)toggleRideMonth(Number(el.dataset.rideMonth));if(el.dataset.rideReceipt)receiptFromRide(el.dataset.rideReceipt);if(el.dataset.journeyMonth)toggleJourneyMonth(el.dataset.journeyMonth);if(el.dataset.journey)toggleJourney(el.dataset.journey);if(el.dataset.receipt)toggleReceipt(el.dataset.receipt);if(el.dataset.receiptRemove)askRemoveReceipt(el.dataset.receiptRemove);if(el.dataset.maintenanceMonth)toggleMaintenanceMonth(el.dataset.maintenanceMonth);if(el.dataset.maintenance)toggleMaintenance(el.dataset.maintenance);if(el.dataset.maintenanceRemove)askRemoveMaintenance(el.dataset.maintenanceRemove);if(el.dataset.share)shareReceipt(el.dataset.share,el.dataset.receiptId);if(el.dataset.platformRemove)removePlatform(el.dataset.platformRemove);if(el.dataset.color&&vehicleDraft){readVehicleDraft();vehicleDraft.color=el.dataset.color;repaintVehicleForm();}if(el.dataset.fipeModel)fipePickModel(el.dataset.fipeModel,el.dataset.fipeName||'');if(el.dataset.fipeYear)fipePickYear(el.dataset.fipeYear);if(el.dataset.action&&actions[el.dataset.action])actions[el.dataset.action]();});
+document.addEventListener('change',e=>{if(e.target.id==='consent-confirm'){consentPending=e.target.checked;$('consent-enter').disabled=!consentPending;$('consent-status').textContent=consentPending?'Tudo pronto para continuar.':'Confirme sua idade e o aceite para continuar.';}if(e.target.id==='ride-filter'){rideFilter=e.target.value;rideHistoryOpen=null;render();}if(e.target.id==='ride-year'){rideYear=Number(e.target.value);rideHistoryOpen=null;render();}if(e.target.id==='history-year'){historyYear=Number(e.target.value);historyOpen=null;render();}if(e.target.id==='journey-year'){journeyYear=Number(e.target.value);journeyMonthsOpen=null;journeysOpen=null;render();}if(e.target.id==='maintenance-year'){maintenanceYear=Number(e.target.value);maintenanceMonthsOpen=null;maintenanceOpen=null;render();}if(e.target.id==='expense-filter'){expenseFilter=e.target.value;historyOpen=null;render();}if(vehicleDraft&&e.target.form&&e.target.form.id==='vehicle-form'&&['brand','model','versionIdx','fuel'].includes(e.target.name)){readVehicleDraft();syncVehicleDraft(e.target.name);repaintVehicleForm(e.target.name);}});
 document.addEventListener('input',e=>{if(e.target.id==='fipe-search'){fipeState.filter=e.target.value;if($('fipe-options'))$('fipe-options').innerHTML=fipeOptions();}if(receiptDraft&&e.target.form&&e.target.form.id==='receipt-form'){readReceiptDraft();if($('receipt-preview'))$('receipt-preview').textContent=receiptText(receiptDraft);}});
 document.addEventListener('submit',e=>{
  e.preventDefault();const formEl=e.target;if(!formEl.checkValidity()){formEl.reportValidity();return;}const d=Object.fromEntries(new FormData(formEl)),fail=m=>{$('form-error').textContent=m;};let message='';

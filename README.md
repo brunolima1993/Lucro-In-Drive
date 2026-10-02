@@ -68,6 +68,14 @@ Uma **jornada por dia**: começar uma quando o dia já tem jornada é recusado. 
 data é o que liga a corrida à jornada dela, então não há lançamento órfão nem
 carimbo em cada corrida.
 
+O **Histórico de corridas** é um botão da tela de Corridas, no mesmo molde do
+histórico de gastos: seletor de ano e de plataforma, total do ano e uma caixa
+por mês que abre e fecha. Em cada corrida, ao lado do valor, há um botão de
+comprovante — ele abre a tela de gerar comprovante já com o valor e a data
+daquela corrida preenchidos; o trajeto fica para o motorista, que é a parte que
+só ele sabe. A tela de Corridas em si ficou com o resumo do período e os três
+atalhos: histórico, Jornadas e gerar comprovante.
+
 No Início, "Últimas corridas" mostra as corridas da jornada aberta e se recolhe
 pela seta ao lado do título. Ao encerrar a jornada a lista zera, e o dia fica
 guardado em **Jornadas**, o botão da tela de Corridas. Lá, um seletor escolhe o

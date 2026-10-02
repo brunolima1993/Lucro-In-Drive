@@ -146,6 +146,14 @@ A caixa do veículo traz o cadastro e a quilometragem, com o lápis e a lixeira
 no alto à direita — editar e remover ficam na própria caixa, não em botões
 soltos acima dela. Enquanto não há carro, o topo mostra **Cadastrar carro**.
 
+**Atualizar km aceita número menor que o atual.** Ler o computador de bordo
+errado acontece, e travar o campo obrigaria a conviver com o erro. Mas não
+passa em silêncio: enquanto se digita um número abaixo do atual, um aviso diz
+de quanto para quanto o odômetro volta, lembra de conferir o computador de
+bordo (os prazos das revisões saem desse número) e, se houver jornada aberta
+que começou acima do novo valor, avisa que a distância do dia volta a zero. Ao
+salvar, o recado repete os dois números.
+
 O **Painel de Manutenção** fica numa tela própria, aberta pelo botão em Meu
 carro. O botão leva só o nome: o estado de cada item já está na tela, em cada
 cartão.

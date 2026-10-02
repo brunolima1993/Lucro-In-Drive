@@ -312,6 +312,209 @@ dialog{width:min(355px,calc(100% - 28px));max-height:min(710px,90dvh);border-rad
 .nudge-copy{flex:1;min-width:200px}
 @media(prefers-reduced-motion:reduce){.spin{animation-duration:2.6s}}
 @media(max-width:500px){.nudge .car-actions .btn{flex:1}.opt-list{max-height:52vh}}
+
+/* BEGIN COMPACT LAYOUT */
+/* Ajuste visual de densidade. Conteúdo e comportamento permanecem no HTML original. */
+:root{--radius:16px}
+main{padding:16px 14px 18px}
+main:focus{outline:none}
+.topbar{padding:10px 14px;gap:8px}
+.page-title{gap:12px;margin-bottom:14px}
+.page-title h1{font-size:26px;line-height:1.2}
+.page-title .eyebrow{margin-bottom:5px}
+.page-title .subtitle{margin-top:6px;line-height:1.45}
+.page-title .actions{gap:8px}
+.page-title .actions .btn{padding:9px 11px;min-height:44px}
+.btn{min-height:44px;padding:9px 12px;gap:7px;border-radius:10px}
+.section-row{gap:10px;margin-bottom:10px}
+.overview-top,.dashboard-bottom,.car-grid,.report-grid{gap:10px}
+.panel-pad{padding:14px}
+.card-heading{gap:8px;margin-bottom:8px}
+.dashboard-bottom{margin-top:12px}
+.empty{padding:18px 12px}
+.footnote{margin-top:16px;line-height:1.65}
+
+/* Início: resumos e controles próximos dos indicadores. */
+.balance{padding:14px;min-height:0}
+.balance-top{gap:10px}
+.balance-number{font-size:44px;letter-spacing:-1.8px;margin:7px 0 10px}
+.balance-breakdown{gap:10px;padding-top:10px;margin-top:0}
+.balance-breakdown>div{gap:8px}
+.balance-breakdown strong{font-size:20px}
+.goal-card{padding:13px 14px}
+.goal-body{gap:18px;margin-top:0}
+.goal-ring-col{gap:6px}
+.goal-ring{width:90px;height:90px}
+.ring-value strong{font-size:25px}
+.ring-value span{margin-top:3px;font-size:11px}
+.goal-copy strong{font-size:20px}
+.goal-copy p{margin:4px 0}
+.goal-edit{top:7px;right:7px}
+.goal-foot{padding-top:8px;margin-top:8px;gap:6px}
+.journey{padding:13px;margin-top:10px;gap:9px}
+.journey-label{gap:8px}
+.journey-label p{margin-top:2px}
+.journey-actions{gap:7px}
+.journey-actions>.btn{padding:8px 10px;min-height:42px}
+.journey-values{gap:9px;padding-top:10px}
+.journey .metric small{font-size:11px;margin-bottom:3px}
+.journey .metric strong{font-size:18px}
+.journey:has(.journey-actions>.btn:only-child){grid-template-columns:minmax(0,1fr) auto}
+.journey:has(.journey-actions>.btn:only-child) .journey-actions{grid-row:1;grid-column:2}
+.journey:has(.journey-actions>.btn:only-child) .journey-values{grid-row:2}
+.service-mini{padding:9px 0}
+.service-mini p{margin-top:3px}
+.nudge{padding:13px;gap:8px;margin-bottom:12px}
+.nudge h3{font-size:14px;text-align:center}
+.nudge-copy{min-width:0;flex-basis:100%}
+.nudge .car-actions{gap:8px;width:100%}
+
+/* Corridas, financeiro, relatórios e históricos. */
+.summary-grid{gap:9px;margin-bottom:14px}
+.summary-card{padding:13px}
+.summary-card p{margin-bottom:5px;line-height:1.4}
+.summary-card strong{font-size:25px}
+.summary-grid .summary-card:first-child strong{font-size:31px}
+.summary-grid .summary-card:first-child strong.vmed{font-size:28px}
+.summary-grid .summary-card:first-child strong.vlong{font-size:25px}
+.summary-card strong.vmed{font-size:20px}
+.summary-card strong.vlong{font-size:17px}
+.summary-card small{margin-top:4px;line-height:1.4}
+.page-link{margin-bottom:7px;padding:10px 12px;min-height:44px}
+.list-toolbar,.list-toolbar.centered{gap:9px;margin-bottom:11px}
+.toolbar-filters{gap:8px}
+.list-toolbar select{padding:8px 32px 8px 10px}
+/* Históricos: filtros ocupam a largura disponível e datas têm coluna própria. */
+.toolbar-filters:has(#history-year),.toolbar-filters:has(#ride-year){display:grid;grid-template-columns:90px minmax(0,1fr);width:100%;gap:8px}
+.toolbar-filters:has(#history-year)>select,.toolbar-filters:has(#ride-year)>select{width:100%;min-width:0;min-height:44px;margin:0}
+.history-total{padding:10px 12px;margin-bottom:10px;gap:10px;border-radius:12px}
+.fold-box{border-radius:13px;margin-bottom:8px}
+.fold-head{padding:10px 12px;gap:9px;min-height:44px}
+.fold-body{padding:2px 12px 4px}
+.fold-row{padding:8px 0;gap:10px}
+.fold-body .fold-row:has(.ride-end){padding:8px 0;gap:7px}
+.fold-body .fold-row:has(.row-day){display:grid;grid-template-columns:minmax(0,1fr) 40px 128px;gap:7px;align-items:center}
+.fold-row .row-day{width:100%;text-align:center;font-variant-numeric:tabular-nums}
+.fold-row:has(.row-day)>:first-child{min-width:0;overflow-wrap:anywhere}
+.fold-row:has(.row-day)>.mono{justify-self:end;text-align:right;font-size:13px;white-space:nowrap}
+.fold-row:has(.row-day) .journey-ride{gap:6px}
+.fold-row:has(.row-day) .journey-ride .platform-logo{width:26px;height:26px;font-size:13px;border-radius:8px}
+.fold-row:has(.row-day) .journey-ride strong{font-size:13px}
+.fold-row:has(.row-day) .ride-end{display:grid;grid-template-columns:minmax(0,1fr) 32px;gap:6px;align-items:center;min-width:0}
+.fold-row:has(.row-day) .ride-end>.mono{text-align:right;font-size:13px;white-space:nowrap}
+.fold-body>.fold-box{margin:8px 0;border-radius:11px}
+.fold-body>.fold-box:first-child{margin-top:8px}
+.fold-body>.fold-box .fold-head{padding:9px 10px}
+.fold-del{margin-right:4px}
+.breakdown-row{margin:15px 0}
+.breakdown-label{margin-bottom:6px;gap:10px}
+.expense-breakdown{margin-top:12px}
+.data-warning{font-size:12px;margin-top:14px;line-height:1.5}
+th,td{padding:10px 12px}
+.receipt-preview{padding:12px;line-height:1.55}
+.share-row{margin-top:10px;gap:8px}
+.platform-list{gap:7px;margin-bottom:13px}
+.platform-row{padding:8px 10px;gap:10px;border-radius:12px}
+
+/* Meu carro, FIPE e revisões. */
+.car-hero{padding:14px;gap:11px;margin-bottom:12px}
+.car-description h2{font-size:20px;line-height:1.25;margin-bottom:4px;overflow-wrap:anywhere}
+.car-description p{line-height:1.45}
+.car-badges{margin-top:7px;gap:7px}
+.car-km{padding-top:10px;gap:8px}
+.car-km strong{font-size:22px}
+.car-actions{gap:8px}
+.maintenance-grid{gap:9px}
+.maintenance-card{padding:13px}
+.maintenance-top{gap:8px}
+.maintenance-name{gap:8px;min-width:0}
+.maintenance-name h3{line-height:1.35;overflow-wrap:anywhere}
+.maintenance-data{gap:9px;margin:11px 0 8px}
+.maintenance-data small{margin-bottom:2px;line-height:1.45}
+.maintenance-bottom{gap:8px;align-items:center}
+.maintenance-bottom p{line-height:1.45}
+.maintenance-bottom .btn{min-height:40px;padding:8px}
+.fipe-card{padding:15px}
+.fipe-price{font-size:32px;margin:12px 0 5px}
+.fipe-spec{padding:9px 0;gap:10px}
+.fipe-spec b{min-width:0;overflow-wrap:anywhere}
+.fipe-disclaimer{padding:10px;margin:10px 0;line-height:1.5}
+.opt-list{gap:6px}
+.opt-list button{padding:10px 12px;min-height:44px;gap:9px}
+.msgbox{padding:10px 12px;margin-bottom:11px;line-height:1.5}
+#maintenance-form+p{margin:10px 0 16px!important}
+
+/* Formulários e janelas: campos preservam uma área confortável de toque. */
+dialog{border-radius:18px}
+.dialog-heading{padding:14px 16px 0;gap:8px}
+.dialog-heading h2{font-size:20px;line-height:1.25}
+.dialog-content{padding:10px 16px 16px}
+.dialog-intro{margin-bottom:13px;line-height:1.45}
+.form-grid{gap:10px}
+.field{gap:4px;min-width:0}
+.field input,.field select{padding:9px 10px;min-height:44px}
+.field small{line-height:1.45}
+.form-actions{margin-top:16px;gap:8px}
+.form-error{margin-top:9px}
+.form-error:empty{margin-top:0}
+.dialog-content hr{margin:13px 0}
+.dialog-content ul{margin-block:10px;padding-left:18px}
+.swatch{display:grid;grid-template-columns:repeat(4,34px);justify-content:center;gap:6px 12px;width:100%}
+#vehicle-form .field:has(#f-km){grid-column:1/-1}
+.loading{padding:8px 0;gap:9px}
+
+/* Login, termos e documentos. */
+.auth-mode main{padding:15px 21px 20px}
+.login-brand{gap:8px;margin-bottom:16px}
+.login-brand .brand-mark{width:48px;height:48px}
+.login-intro{margin-bottom:14px}
+.login-intro p{margin-top:7px;line-height:1.5}
+.auth-divider{margin:12px 0;gap:10px}
+.login-fields{gap:10px}
+.login-input{min-height:46px;padding:0 11px;gap:8px}
+.login-input input{min-height:44px;padding:10px 0}
+.google-login,.login-submit{min-height:46px}
+.login-submit{margin-top:14px}
+.auth-links{margin-top:10px;padding-top:10px;gap:9px}
+.login-demo-note{margin-top:12px}
+.demo-enter{margin-top:5px}
+.terms-mode main{padding:12px 20px 20px}
+.terms-top{margin-bottom:18px}
+.terms-hero{margin-bottom:18px}
+.terms-hero p{margin-top:7px;line-height:1.5}
+.terms-hero .eyebrow{margin-bottom:6px}
+.terms-required{margin-bottom:7px}
+.consent-card{padding:14px;border-radius:15px}
+.consent-choice{gap:12px;min-height:64px}
+.consent-copy small{margin-top:5px;line-height:1.5}
+.terms-documents{margin-top:11px;padding-top:6px}
+.terms-continue{margin-top:16px;min-height:46px}
+.terms-status{margin-top:7px}
+.terms-demo{margin-top:16px;padding-top:12px}
+.legal-document h3{margin-top:15px}
+.legal-document p{margin-top:5px;line-height:1.6}
+.legal-close{margin-top:16px}
+@media(max-width:500px){
+ .topbar{padding-top:max(10px,env(safe-area-inset-top))}
+ .auth-mode main{padding-top:max(15px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom))}
+}
+@media(max-width:360px){
+ main{padding:14px 12px 17px}
+ .topbar{padding-inline:12px}
+ .page-title h1{font-size:24px}
+ .balance-number{font-size:40px}
+ .goal-body{gap:13px}
+ .goal-ring{width:86px;height:86px}
+ .goal-copy strong{font-size:19px}
+ .journey{padding:12px}
+ .journey:has(.journey-actions>.btn:only-child) .journey-actions>.btn{font-size:12px;padding-inline:8px}
+ .auth-mode main,.terms-mode main{padding-inline:17px}
+ .login-brand{margin-bottom:16px}
+ .dialog-heading{padding-inline:14px}
+ .dialog-content{padding-inline:14px}
+}
+
+/* END COMPACT LAYOUT */
 </style>
 </head>
 <body>

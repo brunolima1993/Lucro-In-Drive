@@ -1,0 +1,13 @@
+{
+  "name": "lucroindrive-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "start": "node scripts/serve.mjs",
+    "deploy": "npm run test && npm run build && firebase deploy --only hosting --project lucroindrive"
+  },
+  "engines": {"node": ">=20"}
+}

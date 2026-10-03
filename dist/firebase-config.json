@@ -1,0 +1,12 @@
+{
+  "firebase": {
+    "apiKey": "AIzaSyA5cGKtpDx6kEpayt6L101OsucYc0s8mDE",
+    "authDomain": "lucroindrive.firebaseapp.com",
+    "projectId": "lucroindrive",
+    "storageBucket": "lucroindrive.firebasestorage.app",
+    "messagingSenderId": "480197832009",
+    "appId": "1:480197832009:web:c4f235d010eb1672bc7e98"
+  },
+  "supportEmail": "lucroindrive@gmail.com",
+  "releaseStage": "testing"
+}

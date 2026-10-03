@@ -1,0 +1,17 @@
+import {mkdir,readFile,writeFile,copyFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const out=path.join(root,'dist');
+await mkdir(out,{recursive:true});
+const app=await readFile(path.join(root,'src/app.js'),'utf8');
+if(/function seed\(|enterDemo\(|demoLogin:|prototype\.v1/.test(app))throw new Error('O build não pode incluir acesso demonstrativo.');
+const config=JSON.parse(await readFile(path.join(root,'public/firebase-config.json'),'utf8'));
+if(config.firebase.projectId!=='lucroindrive')throw new Error('Projeto Firebase inesperado.');
+for(const file of ['index.html','firebase-config.json','manifest.webmanifest'])await copyFile(path.join(root,'public',file),path.join(out,file));
+for(const file of ['app.js','app.css','data-model.js','firebase-service.js','account-session.js','legal-documents.js'])await copyFile(path.join(root,'src',file),path.join(out,file));
+const css=await readFile(path.join(root,'src/app.css'),'utf8');
+const icon=css.match(/data:image\/webp;base64,([A-Za-z0-9+/=]+)/);
+if(!icon)throw new Error('Ícone do aplicativo não encontrado.');
+await writeFile(path.join(out,'icon.webp'),Buffer.from(icon[1],'base64'));
+console.log('Build pronto em dist · Firebase: lucroindrive');
